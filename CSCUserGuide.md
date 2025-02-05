@@ -53,7 +53,7 @@ Again for more information please consult the [CSC user guide](https://docs.csc.
 ### For Window user
 
 1. You should install [Window Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install)
-2. Move your key pairs that you have save in your computer from the earlier step into your linux environment under home/<yourusername>/
+2. Move your key pairs that you have save in your computer from the earlier step into your linux environment under `home/<yourusername>/`
 
 The rest of the setup will then be universal
 
@@ -66,13 +66,13 @@ The rest of the setup will then be universal
 7. Clone the github project into to the VM
 8. go into the GitHub by using `cd`
 
-**This part is for the version of the project where there is error in the setup script**
+**\---------This part is for the version of the project where there is error in the setup script\---------**
 
 9. `cd` into scripts
 10. Open `install_tools.sh` using either nano or vim
 11. Replace the script with the script from this [link](https://github.com/makotosoul/oss-mlops-platform/blob/main/scripts/install_tools.sh)
 
-**End**
+**\---------End\---------**
 
 12. Follow the rest of the tutorial in `README.md`
 
