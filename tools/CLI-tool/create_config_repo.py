@@ -208,8 +208,11 @@ def set_config(repo_name, org_name):
         if not kpw:
             kpw = "12341234"
 
-        print("Add remote cluster private key:")
-        remote_key = input().strip()
+        print("Add remote cluster private key file path (default: ./ssh_key):")
+        remote_key_path = input().strip()
+        if not remote_key_path:
+            remote_key_path = "./ssh_key"
+            pass
         print("Specify remote cluster IP:")
         remote_ip = input().strip()
         print("Add remote cluster username:")
@@ -219,7 +222,7 @@ def set_config(repo_name, org_name):
             'KUBEFLOW_ENDPOINT': kep,
             'KUBEFLOW_USERNAME': kun,
             'KUBEFLOW_PASSWORD': kpw,
-            'REMOTE_CLUSTER_SSH_PRIVATE_KEY': remote_key,
+            'REMOTE_CLUSTER_SSH_PRIVATE_KEY_PATH': remote_key_path,
             'REMOTE_CLUSTER_SSH_IP': remote_ip,
             'REMOTE_CLUSTER_SSH_USERNAME': remote_username
         }
@@ -252,13 +255,11 @@ def set_config(repo_name, org_name):
 
     for key, value in data.items():
     # Special handling for SSH private key
-        if key == "REMOTE_CLUSTER_SSH_PRIVATE_KEY":
-            # Ensure the SSH key is passed correctly (with newlines intact)
-            value = value.replace("\n", "\\n")  # Replace newlines with literal \n for the command
-            subprocess.run(f'gh secret set {key} --body "{value}" --org {org_name} --visibility all', shell=True)
+        if key == "REMOTE_CLUSTER_SSH_PRIVATE_KEY_PATH":
+            with open(value) as file:
+                subprocess.run(['gh', 'secret', 'set', key, '--org', org_name, '--visibility all'], stdin=file)
         else:
             subprocess.run(f'gh secret set {key} --body "{value}" --org {org_name} --visibility all', shell=True)
-
 
 if __name__ == "__main__":
     app()
