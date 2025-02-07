@@ -257,7 +257,7 @@ def set_config(repo_name, org_name):
     # Special handling for SSH private key
         if key == "REMOTE_CLUSTER_SSH_PRIVATE_KEY_PATH":
             with open(value) as file:
-                subprocess.run(['gh', 'secret', 'set', key, '--org', org_name, '--visibility all'], stdin=file)
+                subprocess.run(['gh', 'secret', '--org', org_name, '--visibility', 'all', 'set', key], stdin=file)
         else:
             subprocess.run(f'gh secret set {key} --body "{value}" --org {org_name} --visibility all', shell=True)
 
