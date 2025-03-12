@@ -3,7 +3,9 @@ set -e
 # Navigate to the directory containing the script
 
 # Install the requirements
-pip install -r oss-mlops-platform/tools/CLI-tool/requirements.txt
+python3 -m venv venv
+source venv/bin/activate
+python3 -m pip install -r oss-mlops-platform/tools/CLI-tool/requirements.txt
 
 read -p "Enter the organization name: " org_name
 
