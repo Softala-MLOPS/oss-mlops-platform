@@ -7,7 +7,7 @@ import json
 import subprocess
 import typer
 
-# Define the Typer appp
+# Define the Typer apppp
 app = typer.Typer()
 
 # Use Typer to define repo_name as an argument
