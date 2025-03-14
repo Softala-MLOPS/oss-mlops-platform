@@ -24,7 +24,7 @@ KUBEFLOW_ENDPOINT = "http://localhost:8080"
 KUBEFLOW_USERNAME = "user@example.com"
 KUBEFLOW_PASSWORD = "12341234"
 KUBEFLOW_USER_NAMESPACE = "kubeflow-user-example-com"
-
+#
 
 def get_istio_auth_session(url: str, username: str, password: str) -> dict:
     """
