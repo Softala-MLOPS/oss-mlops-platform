@@ -1,4 +1,4 @@
-# OSS MLOps Platform
+# OSS MLOps Platformm
 
 Welcome to the OSS MLOps Platform, a comprehensive suite designed to streamline your machine learning operations from experimentation to deployment.
 
