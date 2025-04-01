@@ -48,4 +48,4 @@ def check_gh_auht():
         subprocess.run("gh auth login", shell=True)
 
 if __name__ == "__main__":
-    app()
+    app()# check runner
