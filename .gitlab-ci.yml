@@ -1,49 +1,34 @@
-# .gitlab-ci.yml
-# This file configures the GitLab CI/CD pipeline, equivalent to the
-# provided GitHub Actions workflows for the development environment.
-
-# Define the execution stages. Both jobs can run in the same stage in parallel if triggered by the same commit.
 stages:
   - run
 
-# Job equivalent to the GitHub Action for running Jupyter notebooks
 run-notebook-dev:
   stage: run
-  image: python:3.8 # Use a Docker image with Python 3.8 pre-installed
+  image: python:3.8
   tags:
-    - self-hosted # Selects runners tagged with 'self-hosted'
+    - self-hosted
   script:
     - echo "Installing Jupyter dependencies..."
     - python -m pip install --upgrade pip
     - pip install jupyter
     - echo "Executing Jupyter Notebook..."
-    # Execute the Jupyter Notebook and overwrite the existing file with the results
     - jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
   rules:
-    # Run this job only for pushes to the 'development' branch
-    # AND when files within the 'notebooks/' directory have changed.
     - if: '$CI_COMMIT_BRANCH == "development"'
       changes:
-        - notebooks/**/* # Use GitLab's glob pattern for paths
+        - notebooks/**/*
 
-# Job equivalent to the GitHub Action for running Python scripts
 run-python-dev:
   stage: run
-  # Choose an appropriate Python image. Using 3.10 as an example.
-  # Adjust if your dependencies require a specific version.
-  image: python:3.10
+  image: python:3.8
   tags:
-    - self-hosted # Selects runners tagged with 'self-hosted'
+    - self-hosted
   script:
     - echo "Installing Python script dependencies..."
     - python -m pip install --upgrade pip
     - pip install pandas numpy kfp~=1.8.14 scikit-learn
     - echo "Executing Python submission script..."
-    # Connect to local server and run the Python files
     - python src/submit_run.py
   rules:
-    # Run this job only for pushes to the 'development' branch
-    # AND when files within the 'src/' directory have changed.
     - if: '$CI_COMMIT_BRANCH == "development"'
       changes:
-        - src/**/* # Use GitLab's glob pattern for paths
+        - src/**/*
