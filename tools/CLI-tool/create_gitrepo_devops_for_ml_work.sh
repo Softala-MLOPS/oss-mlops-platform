@@ -24,6 +24,27 @@ if [[ -z "$org_name" ]]; then
     exit 1
 fi
 
+while true; do
+    echo "Select the platform:"
+    echo "1) GitHub"
+    echo "2) GitLab"
+    read -p "Enter your choice: " platform_choice
+
+    case $platform_choice in
+        1)
+            platform="github"
+            break
+            ;;
+        2)
+            platform="gitlab"
+            break
+            ;;
+        *)
+            echo "Invalid choice. Please select 1 for GitHub or 2 for GitLab."
+            ;;
+    esac
+done
+
 read -p "Enter the name of the config repo (default: Config-%username-%Y-%m-%d-%tag): " repo_name
 
 if [[ -z "$repo_name" ]]; then
@@ -46,21 +67,21 @@ while true; do
 
     case $choice in
         1)
-            python3 "${cli_tool_dir}/configure_gh.py"
+            python3 "${cli_tool_dir}/configure_${platform}.py"
             ;;
         2)
-            python3 "${cli_tool_dir}/configure_gh.py"
-            python3 "${cli_tool_dir}/create_config_repo.py" "$repo_name" "$org_name"                             
+            python3 "${cli_tool_dir}/configure_${platform}.py"
+            python3 "${cli_tool_dir}/${platform}/create_config_repo.py" "$repo_name" "$org_name"
             ;;
         3)
-            python3 "${cli_tool_dir}/configure_gh.py"
-            python3 "${cli_tool_dir}/create_working_repo.py" "$repo_name" "$org_name"
+            python3 "${cli_tool_dir}/configure_${platform}.py"
+            python3 "${cli_tool_dir}/${platform}/create_working_repo.py" "$repo_name" "$org_name"
             exit 0
             ;;
         4)
-            python3 "${cli_tool_dir}/configure_gh.py"
-            python3 "${cli_tool_dir}/create_config_repo.py" "$repo_name" "$org_name"
-            python3 "${cli_tool_dir}/create_working_repo.py" "$repo_name" "$org_name"
+            python3 "${cli_tool_dir}/configure_${platform}.py"
+            python3 "${cli_tool_dir}/${platform}/create_config_repo.py" "$repo_name" "$org_name"
+            python3 "${cli_tool_dir}/${platform}/create_working_repo.py" "$repo_name" "$org_name"
             exit 0
             ;;
         5)
