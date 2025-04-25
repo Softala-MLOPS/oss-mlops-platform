@@ -1,7 +1,7 @@
 stages:
   - run
 
-run-notebook-dev:
+run-notebook-in-development-environment:
   stage: run
   image: python:3.8
   tags:
@@ -17,7 +17,7 @@ run-notebook-dev:
       changes:
         - notebooks/**/*
 
-run-python-dev:
+run-files-in-development-environment:
   stage: run
   image: python:3.8
   tags:
