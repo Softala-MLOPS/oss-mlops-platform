@@ -18,9 +18,11 @@ token=$(gh api --method POST repos/$org/$repo/actions/runners/registration-token
 echo $token
 deploy_runner()
 {
- 	kubectl apply -f github-runner-deployment.yaml
+	kubectl create namespace actions-runner
 	echo "Creating kubernetes secret"
 	kubectl create secret generic github-runner-secrets --from-literal=GITHUB_TOKEN="$token" --from-literal=GITHUB_URL="https://github.com/$org/$repo" -n actions-runner
+ 	kubectl apply -f github-runner-deployment.yaml
+
 }
 
 if kubectl delete deployment github-runner --namespace=actions-runner; then
