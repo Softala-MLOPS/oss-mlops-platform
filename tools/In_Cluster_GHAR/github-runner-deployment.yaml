@@ -45,5 +45,4 @@ spec:
           mountPath: "/runner/_work"
       volumes:
       - name: runner-workdir
-        persistentVolumeClaim:
-          claimName: runner-pvc
+       emptyDir: {}
