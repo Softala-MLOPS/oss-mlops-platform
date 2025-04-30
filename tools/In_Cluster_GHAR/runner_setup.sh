@@ -31,6 +31,7 @@ if kubectl delete deployment github-runner --namespace=actions-runner; then
 	echo "Reinstalling the github-runner"
 	deploy_runner
 else 
+	kubectl delete namespace actions-runner
 	echo "No in cluster runner was found..."
 	echo "Creating new in cluster runner"
 	deploy_runner
