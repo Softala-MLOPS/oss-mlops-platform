@@ -12,7 +12,7 @@ fi
 org=ecremotedemo
 repo=ecdemowork
 
-token=$(gh api --method POST repos/$org/$repo/actions/runners/registration-token | jq '.token')
+token=$(gh api --method POST repos/$org/$repo/actions/runners/registration-token | jq -r '.token')
 echo $token
 deploy_runner()
 {
