@@ -26,6 +26,7 @@ deploy_runner()
 }
 
 if kubectl delete deployment github-runner --namespace=actions-runner; then
+	kubectl delete namespace actions-runner
 	kubectl delete secret github-runner-secrets --namespace actions-runner
 	echo "Reinstalling the github-runner"
 	deploy_runner
