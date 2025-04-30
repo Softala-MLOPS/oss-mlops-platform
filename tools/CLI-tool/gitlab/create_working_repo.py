@@ -35,24 +35,19 @@ def get_working_repo_name(config_repo_name: str):
 
 def check_working_repo_name_unique(org_name: str, working_repo_name: str):
     try:
+        return subprocess.run(
+                    ["glab", f"repo", "view", f"{org_name}/{working_repo_name}"],
+                    check=False
+                ).returncode != 0
+        
         # Check if the repo ain't found
-        return (
-            json.loads(
-                subprocess.run(
-                    ["gh", "api", f"repos/{org_name}/{working_repo_name}"],
-                    capture_output=True,
-                    text=True,
-                ).stdout
-            )["status"]
-            == "404"
-        )
     except:
         # Yeah we're probably OK?
         return True
 
 
 def fork_repo(repo_name: str, org_name):
-    """Fork the repository using GitHub CLI."""
+    """Fork the repository using GitLab CLI."""
     working_repo_name = get_working_repo_name(repo_name)
 
     while not check_working_repo_name_unique(org_name, working_repo_name):
@@ -61,28 +56,24 @@ def fork_repo(repo_name: str, org_name):
         )
         working_repo_name = get_working_repo_name(repo_name)
 
-    version = subprocess.run(["gh", "--version"], capture_output=True, text=True)
-
-    if "2.4.0" in version.stdout:
-        subprocess.run(f'gh repo fork {org_name}/{repo_name} --clone --remote-name {working_repo_name} --org {org_name}', shell=True,check=True)
-    else:
-        response = subprocess.run(f'gh repo fork {org_name}/{repo_name} --clone --fork-name "{working_repo_name}" --org {org_name}', shell=True)
-        if (response.returncode == 0):
+    print("here")
+    response = subprocess.run(f'glab repo fork {org_name}/{repo_name} --clone --name {working_repo_name} --path {working_repo_name}', shell=True)
+    if (response.returncode == 0):
             #this is unecessary cause the response should catch this error already but on the off chance it not ;>?
-            try:
-                os.chdir(working_repo_name)
-            except FileNotFoundError :
-                print(f"{working_repo_name} does not exist")
-                exit(1)
-            subprocess.run(["git", "checkout", "-b", "staging", "origin/staging"])
-            subprocess.run(["git", "response =checkout", "-b", "production", "origin/production"])
-            subprocess.run(["git", "checkout", "development"])
-            os.chdir("../")
-        else:
-            print(response)
-            print()
-            print(f"Maybe {repo_name} doesn't exist both in local and remote repo of {org_name}?")
+        try:
+            os.chdir(working_repo_name)
+        except FileNotFoundError :
+            print(f"{working_repo_name} does not exist")
             exit(1)
+        subprocess.run(["git", "checkout", "-b", "staging", "origin/staging"])
+        subprocess.run(["git", "checkout", "-b", "production", "origin/production"])
+        subprocess.run(["git", "checkout", "-b", "origin/development"])
+        os.chdir("../")
+    else:
+        print(response)
+        print()
+        print(f"Maybe {repo_name} doesn't exist both in local and remote repo of {org_name}?")
+        exit(1)
 
 
         # This option was for the older versions of GH in order to clone the forked repo

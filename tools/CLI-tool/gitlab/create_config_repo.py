@@ -14,12 +14,9 @@ main_branch = ""
 @app.command()
 def main(repo_name: str, org_name: str):
     """
-    Main function to create a GitHub repository, set up structure, and configure secrets.
+    Main function to create a GitLab repository, set up structure, and configure secrets.
     """
     print(f"Working with repository: {repo_name}")
-
-    print("Checking if GitHub CLI is installed...")
-    check_gh_installed()
 
     print("Creating a new repository...")
     create_repo(repo_name, org_name)
@@ -40,55 +37,34 @@ def main(repo_name: str, org_name: str):
     set_config(repo_name,org_name)
 
 
-def check_gh_installed():
-    """Check if GitHub CLI is installed."""
-    try:
-        result = subprocess.run(["gh", "--version"], capture_output=True, text=True)
-        if result.returncode != 0:
-            typer.echo("GitHub CLI (gh) is not installed.")
-            typer.echo("Do you want to install GitHub CLI? (y/n)")
-            choice = input().strip().lower()
-            if choice == 'y':
-                if sys.platform == "darwin":
-                    subprocess.run(["brew", "install", "gh"], check=True)
-                elif sys.platform == "linux":
-                    subprocess.run(["sudo", "apt", "install", "gh"], check=True)
-                else:
-                    typer.echo("Unsupported OS. Please install GitHub CLI manually.")
-                    sys.exit(1)
-            else:
-                typer.echo("GitHub CLI (gh) is required. Exiting...")
-                sys.exit(1)
-    except FileNotFoundError:
-        typer.echo("GitHub CLI (gh) is not installed.")
-        sys.exit(1)
+
 
 
 def check_repo(repo_name, org_name):
     """Check if repository already exists."""
-    result = subprocess.run(f"gh repo view {org_name}/{repo_name}", shell=True, capture_output=True)
+    result = subprocess.run(f"glab repo view {org_name}/{repo_name}", shell=True, capture_output=True)
     return result.returncode == 0
 
 
 def create_repo(repo_name, org_name):
     """Create a new GitHub repository."""
-    result = subprocess.run("gh auth status", shell=True, capture_output=True, text=True)
+    result = subprocess.run("glab auth status", shell=True, capture_output=True, text=True)
 
     if "Logged in to github.com" not in result.stdout:
-        subprocess.run("gh auth login", shell=True)
+        subprocess.run("glab auth login", shell=True)
 
 
 
 
     if not check_repo(repo_name, org_name):
-        subprocess.run(f'gh repo create {org_name}/{repo_name} --public --description "Upstream repository" --clone', shell=True)
+        subprocess.run(f'glab repo create {org_name}/{repo_name} --public --description "Upstream repository"', shell=True)
         os.chdir(repo_name)
     else:
         typer.echo("Repository already exists.")
 
         repos = subprocess.run('ls -a', shell=True, capture_output=True, text=True).stdout.split()
         if repo_name not in repos:
-            subprocess.run(f'git clone https://github.com/{org_name}/{repo_name}.git', shell=True)
+            subprocess.run(f'git clone https://gitlab.com/{org_name}/{repo_name}.git', shell=True)
             os.chdir(repo_name)
         else:
             os.chdir(repo_name)
@@ -189,7 +165,7 @@ def set_default_branch(repo_name, org_name):
     branch_name = find_ex_main_branch()
     """Set the default branch to development."""
     try:
-        subprocess.run(f"gh api -X PATCH repos/{org_name}/{repo_name} -f default_branch=development", shell=True, capture_output=True)
+        subprocess.run(f"glab api -X PUT repos/{org_name}/{repo_name} -f default_branch=development", shell=True, capture_output=True)
         if branch_name:
             subprocess.run(["git", "push", "origin", "--delete", branch_name], capture_output=True, text=True)
     except subprocess.CalledProcessError as e:

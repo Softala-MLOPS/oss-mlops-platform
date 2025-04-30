@@ -6,19 +6,10 @@ app = typer.Typer()
 
 @app.command()
 def main(platform: str = typer.Option("github", help="Choose platform: github or gitlab")):
-    if platform == "github":
-        print("Checking GitHub CLI installation...")
-        check_gh_installed()
-        print("Checking GitHub authentication...")
-        check_gh_auth()
-    elif platform == "gitlab":
-        print("Checking GitLab CLI installation...")
-        check_glab_installed()
-        print("Checking GitLab authentication...")
-        check_glab_auth()
-    else:
-        typer.echo("Invalid platform. Choose 'github' or 'gitlab'.")
-        sys.exit(1)
+    print("Checking GitLab CLI installation...")
+    check_glab_installed()
+    print("Checking GitLab authentication...")
+    check_glab_auth()
 
 def check_glab_installed():
     """Check if GitLab CLI is installed."""
