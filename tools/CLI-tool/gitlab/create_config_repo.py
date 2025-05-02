@@ -48,14 +48,6 @@ def check_repo(repo_name, org_name):
 
 def create_repo(repo_name, org_name):
     """Create a new GitHub repository."""
-    result = subprocess.run("glab auth status", shell=True, capture_output=True, text=True)
-
-    if "Logged in to github.com" not in result.stdout:
-        subprocess.run("glab auth login", shell=True)
-
-
-
-
     if not check_repo(repo_name, org_name):
         subprocess.run(f'glab repo create {org_name}/{repo_name} --public --description "Upstream repository"', shell=True)
         os.chdir(repo_name)
@@ -299,6 +291,7 @@ def set_config(repo_name, org_name):
     if not config or ("KUBEFLOW_ENDPOINT" not in config):
         exit("Error: The config seems to be malformed!")
 
+    # TODO: make this GitLab-compatible
     for key, value in config.items():
     # Special handling for SSH private key
         if key == "REMOTE_CLUSTER_SSH_PRIVATE_KEY_PATH":
@@ -306,9 +299,11 @@ def set_config(repo_name, org_name):
                 print(f"SSH key path {value} does not point to a valid SSH key! Skipping...")
                 continue
             with open(value) as file:
-                subprocess.run(['gh', 'secret', '--org', org_name, '--visibility', 'all', 'set', 'REMOTE_CLUSTER_SSH_PRIVATE_KEY'], stdin=file)
+                # subprocess.run(['gh', 'secret', '--org', org_name, '--visibility', 'all', 'set', 'REMOTE_CLUSTER_SSH_PRIVATE_KEY'], stdin=file)
+                pass
         else:
-            subprocess.run(f'gh secret set {key} --body "{value}" --org {org_name} --visibility all', shell=True)
+            pass
+            # subprocess.run(f'gh secret set {key} --body "{value}" --org {org_name} --visibility all', shell=True)
 
 if __name__ == "__main__":
     app()

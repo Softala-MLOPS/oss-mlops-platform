@@ -37,7 +37,7 @@ def check_glab_installed():
 def check_glab_auth():
     """Check if user is authenticated with GitLab."""
     result = subprocess.run("glab auth status", shell=True, capture_output=True, text=True)
-
+    print(f"Dbg: {result.stdout}")
     if "Logged in to gitlab.com" not in result.stdout:
         subprocess.run("glab auth login", shell=True)
 
