@@ -6,6 +6,8 @@ import os
 import shutil
 import yaml
 
+import pathlib
+
 # Define the Typer app
 app = typer.Typer()
 main_branch = ""
@@ -196,10 +198,10 @@ def set_config(repo_name, org_name):
         if not kpw:
             kpw = "12341234"
 
-        print("Add remote cluster private key file path (default: ./ssh_key):")
+        print("Add remote cluster private key file path (default: empty):")
         remote_key_path = input().strip()
         if not remote_key_path:
-            remote_key_path = "./ssh_key"
+            remote_key_path = ""
 
         print("Specify remote cluster IP:")
         remote_ip = input().strip()
@@ -295,15 +297,13 @@ def set_config(repo_name, org_name):
     for key, value in config.items():
     # Special handling for SSH private key
         if key == "REMOTE_CLUSTER_SSH_PRIVATE_KEY_PATH":
-            if not os.path.isfile(value) and not os.path.islink(value):
+            if not os.path.isfile(pathlib.Path(value)) and not os.path.islink(pathlib.Path(value)):
                 print(f"SSH key path {value} does not point to a valid SSH key! Skipping...")
                 continue
             with open(value) as file:
-                # subprocess.run(['gh', 'secret', '--org', org_name, '--visibility', 'all', 'set', 'REMOTE_CLUSTER_SSH_PRIVATE_KEY'], stdin=file)
-                pass
+                subprocess.run(['glab', 'variable', 'set', 'REMOTE_CLUSTER_SSH_PRIVATE_KEY', '--group', org_name], stdin=file)
         else:
-            pass
-            # subprocess.run(f'gh secret set {key} --body "{value}" --org {org_name} --visibility all', shell=True)
+            subprocess.run(['glab', 'variable', 'set', key, '--value', value, '--group', org_name])
 
 if __name__ == "__main__":
     app()
