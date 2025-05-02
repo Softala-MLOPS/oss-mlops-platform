@@ -17,13 +17,6 @@ if ! python3 "${cli_tool_dir}/check_git_repo.py"; then
     exit 1
 fi
 
-read -p "Enter the organization name: " org_name
-
-if [[ -z "$org_name" ]]; then
-    echo "Cannot continue without organization name!"
-    exit 1
-fi
-
 while true; do
     echo "Select the platform:"
     echo "1) GitHub"
@@ -44,6 +37,13 @@ while true; do
             ;;
     esac
 done
+
+read -p "Enter the organization name: " org_name
+
+if [[ -z "$org_name" ]]; then
+    echo "Cannot continue without organization name!"
+    exit 1
+fi
 
 read -p "Enter the name of the config repo (default: Config-%username-%Y-%m-%d-%tag): " repo_name
 
