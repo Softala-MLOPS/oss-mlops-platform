@@ -1,0 +1,46 @@
+stages:
+  - run
+
+run-notebook-in-staging-environment:
+  stage: run
+  image: python:3.8
+  tags: [ 'docker' ] 
+  before_script:
+    - mkdir -p ~/.ssh
+    - echo "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H "$REMOTE_CLUSTER_SSH_IP" >> ~/.ssh/known_hosts
+    - sleep 5
+    - python -m pip install --upgrade pip
+    - pip install jupyter
+  script:
+    - jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
+  artifacts:
+    when: always
+    paths:
+      - notebooks/demo-pipeline.ipynb
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "staging"'
+      changes: [ "notebooks/**" ]
+
+
+run-files-in-staging-environment:
+  stage: run
+  image: python:3.8
+  tags: [ 'docker' ]
+  before_script:
+    - mkdir -p ~/.ssh
+    - echo "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H "$REMOTE_CLUSTER_SSH_IP" >> ~/.ssh/known_hosts
+    - python -m pip install --upgrade pip
+    - pip install pandas numpy 'kfp~=1.8.14' scikit-learn
+  script:
+    - python src/submit_run.py
+  artifacts:
+    when: always
+    paths:
+      - run.log
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "staging"'
+      changes: [ "src/**" ]
