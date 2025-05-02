@@ -23,6 +23,16 @@ function deploy_runner()
 
 }
 
+function restart_secret()
+{
+	if kubectl get deployment github-runner -n actions-runner; then
+		if kubectl delete secret github-runner-secrets --namespace actions-runner; then
+			kubectl create secret generic github-runner-secrets --from-literal=GITHUB_TOKEN=$token --from-literal=GITHUB_URL="https://github.com/$org/$repo" -n actions-runner
+		fi
+	fi
+}
+
+restart_secret()
 if kubectl delete deployment github-runner --namespace=actions-runner; then
 	if kubectl delete secret github-runner-secrets --namespace actions-runner; then
 			echo "Reinstalling the github-runner"
