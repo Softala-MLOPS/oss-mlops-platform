@@ -21,7 +21,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              ./config.sh --url $RUNNER_REPOSITORY_URL --token $GITHUB_PAT && 
+              ./config.sh --url $RUNNER_REPOSITORY_URL --token $GITHUB_PAT --replace && 
               ./run.sh
           env:
             - name: RUNNER_NAME
