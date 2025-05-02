@@ -14,35 +14,37 @@ spec:
         app: github-runner
     spec:
       containers:
-      - name: runner
-        image: ghcr.io/actions/actions-runner
-        securityContext:
-          privileged: true
-        command: [ "/bin/bash", "-c" ]
-        args:
-          - |
-            ./config.sh --url $RUNNER_REPOSITORY_URL --token $GITHUB_PAT --name $RUNNER_NAME --replace && 
-            ./run.sh
-        env:
-        - name: RUNNER_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: RUNNER_WORKDIR
-          value: "/runner/_work"
-        - name: RUNNER_REPOSITORY_URL
-          valueFrom:
-            secretKeyRef:
-              name: github-runner-secrets
-              key: GITHUB_URL
-        - name: GITHUB_PAT
-          valueFrom:
-            secretKeyRef:
-              name: github-runner-secrets
-              key: GITHUB_TOKEN
-        volumeMounts:
-        - name: runner-workdir
-          mountPath: "/runner/_work"
+        - name: runner
+          image: ghcr.io/actions/actions-runner
+          securityContext:
+            privileged: true
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              if [ ! -f /runner/_work/.configured ]; then 
+                ./config.sh --url $RUNNER_REPOSITORY_URL --token $GITHUB_PAT && touch /runner/_work/.configured; 
+              fi; 
+              ./run.sh
+          env:
+            - name: RUNNER_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: RUNNER_WORKDIR
+              value: "/runner/_work"
+            - name: RUNNER_REPOSITORY_URL
+              valueFrom:
+                secretKeyRef:
+                  name: github-runner-secrets
+                  key: GITHUB_URL
+            - name: GITHUB_PAT
+              valueFrom:
+                secretKeyRef:
+                  name: github-runner-secrets
+                  key: GITHUB_TOKEN
+          volumeMounts:
+            - name: runner-workdir
+              mountPath: "/runner/_work"
       volumes:
-      - name: runner-workdir
-        emptyDir: {}
+        - name: runner-workdir
+          emptyDir: {}
