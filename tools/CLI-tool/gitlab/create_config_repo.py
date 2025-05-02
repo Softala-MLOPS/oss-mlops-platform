@@ -159,7 +159,7 @@ def set_default_branch(repo_name, org_name):
     branch_name = find_ex_main_branch()
     """Set the default branch to development."""
     try:
-        subprocess.run(f"glab api -X PUT repos/{org_name}/{repo_name} -f default_branch=development", shell=True, capture_output=True)
+        subprocess.run(f"glab api -X PUT repos/{org_name}%2F{repo_name} -f default_branch=development", shell=True, capture_output=True)
         if branch_name:
             subprocess.run(["git", "push", "origin", "--delete", branch_name], capture_output=True, text=True)
     except subprocess.CalledProcessError as e:
@@ -316,10 +316,13 @@ def set_config(repo_name, org_name):
                 else:
                     subprocess.run(['glab', 'variable', 'update', 'REMOTE_CLUSTER_SSH_PRIVATE_KEY', '--group', org_name], stdin=file)
         else:
+            used_val = value
+            if not used_val:
+                used_val = '""'
             if "ERROR: 404 Not Found" in subprocess.run(['glab', 'variable', 'get', key, '--group', org_name], capture_output=True, text=True).stderr:
-                subprocess.run(['glab', 'variable', 'set', key, '--value', f'"{value}"', '--group', org_name])
+                subprocess.run(['glab', 'variable', 'set', key, '--value', used_val, '--group', org_name])
             else:
-                subprocess.run(['glab', 'variable', 'update', key, '--value', f'"{value}"', '--group', org_name])
+                subprocess.run(['glab', 'variable', 'update', key, '--value', used_val, '--group', org_name])
 
 if __name__ == "__main__":
     app()

@@ -35,11 +35,14 @@ def get_working_repo_name(config_repo_name: str):
 
 def check_working_repo_name_unique(org_name: str, working_repo_name: str):
     try:
-        return subprocess.run(
-                    ["glab", f"repo", "view", f"{org_name}/{working_repo_name}"],
-                    check=False
-                ).returncode != 0
-        
+        return (
+            subprocess.run(
+                ["glab", f"repo", "view", f"{org_name}/{working_repo_name}"],
+                check=False,
+            ).returncode
+            != 0
+        )
+
         # Check if the repo ain't found
     except:
         # Yeah we're probably OK?
@@ -56,13 +59,43 @@ def fork_repo(repo_name: str, org_name):
         )
         working_repo_name = get_working_repo_name(repo_name)
 
-    print("here")
-    response = subprocess.run(f'glab repo fork {org_name}/{repo_name} --clone --name {working_repo_name} --path {working_repo_name}', shell=True)
-    if (response.returncode == 0):
-            #this is unecessary cause the response should catch this error already but on the off chance it not ;>?
+    response = subprocess.run(
+        [
+            "glab",
+            "api",
+            f"projects/{org_name}%2F{repo_name}/fork",
+            "--field",
+            f'path={working_repo_name} namespace_path={org_name}'
+        ]
+    )
+
+    if response.returncode == 0:
+        # this is unecessary cause the response should catch this error already but on the off chance it not ;>?
+
+        # Since we're forking via API, we have to do the wait/clone ourselves
+
+        while True:
+            try:
+                fork_status_resp = json.loads(subprocess.run(['glab', 'api', f'projects/{org_name}%2F{working_repo_name}/import'], capture_output=True, check=True, text=True).stdout)
+
+                import_status = fork_status_resp["import_status"]
+                
+                if import_status == "failed":
+                    print(f"Fork status failed! Resp: {fork_status_resp}")
+                    sys.exit(1337)
+                print(f"Fork status: {import_status}")
+                if import_status == "finished":
+                    break
+            except Exception as e:
+                print(f"Something went wrong during waiting for fork! Error: {e}")
+                sys.exit(1)
+
+        print(f"Cloning repository {working_repo_name}")        
+        subprocess.run(["glab", "repo", "clone", f"{org_name}/{working_repo_name}", working_repo_name])
+
         try:
             os.chdir(working_repo_name)
-        except FileNotFoundError :
+        except FileNotFoundError:
             print(f"{working_repo_name} does not exist")
             exit(1)
         subprocess.run(["git", "checkout", "-b", "staging", "origin/staging"])
@@ -72,9 +105,10 @@ def fork_repo(repo_name: str, org_name):
     else:
         print(response)
         print()
-        print(f"Maybe {repo_name} doesn't exist both in local and remote repo of {org_name}?")
+        print(
+            f"Maybe {repo_name} doesn't exist both in local and remote repo of {org_name}?"
+        )
         exit(1)
-
 
         # This option was for the older versions of GH in order to clone the forked repo
 

@@ -9,7 +9,7 @@ cli_tool_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Install the requirements
 python3 -m venv venv
 source venv/bin/activate
-python3 -m pip install -r "${cli_tool_dir}/requirements.txt"
+python3 -m pip install -q -r "${cli_tool_dir}/requirements.txt"
 
 # Check if script is run outside of git repository
 if ! python3 "${cli_tool_dir}/check_git_repo.py"; then
