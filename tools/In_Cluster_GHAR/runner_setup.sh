@@ -6,12 +6,12 @@ if ! [[ $(which jq) ]]; then
 	exit 1
 fi
 
-#TODO please add auth
+#TODO please add authentication or some form of input validation
 read -p "please type in your organization: " org
 read -p "please type in your repository's name: " repo
 token=$(gh api --method POST repos/$org/$repo/actions/runners/registration-token | jq -r '.token')
 
-deploy_runner()
+function deploy_runner()
 {
 	if ! [[ $(kubectl get namespace actions-runner) ]]; then
 		kubectl create namespace actions-runner
