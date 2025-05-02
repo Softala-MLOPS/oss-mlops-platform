@@ -199,13 +199,13 @@ def set_config(repo_name, org_name):
 
     while True:
         try:
-            choice = int(input("Choose an option (1: Interactively create config, 2: Copy an existing config.yaml): "))
-            if choice in [1, 2]:
+            choice = int(input("Choose an option (1: Interactively create config, 2: Copy an existing config.yaml, 3: Default everything (DEBUG)): "))
+            if choice >= 1 and choice <= 3:
                 break
             else:
-                print("Invalid choice. Please select 1 or 2.")
+                print("Invalid choice. Please select 1, 2 or 3.")
         except ValueError:
-            print("Invalid input. Please enter a number (1 or 2).")
+            print("Invalid input. Please enter a number (1, 2 or 3).")
 
     config = None
 
@@ -313,6 +313,16 @@ def set_config(repo_name, org_name):
         except FileNotFoundError:
             print(f"Error: The specified file does not exist at path: {config_file}")
             exit(1)
+    elif choice == 3:
+        # Just make everything default for trial runs
+        config = {
+            'KUBEFLOW_ENDPOINT': "http://localhost:8080",
+            'KUBEFLOW_USERNAME': "user@example.com",
+            'KUBEFLOW_PASSWORD': "12341234",
+            'REMOTE_CLUSTER_SSH_PRIVATE_KEY_PATH': "",
+            'REMOTE_CLUSTER_SSH_IP': "",
+            'REMOTE_CLUSTER_SSH_USERNAME': ""
+        }
 
     # Check if a key exists in config, if it doesn't config is probably malformed
     # Note: maybe have some schema checker thing?
