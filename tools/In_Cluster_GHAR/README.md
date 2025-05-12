@@ -2,7 +2,7 @@
 
 The script `runner_setup.sh` is an alternative way to install the GitHub Action runner in to the MLOPS platform Kubernetes cluster as a pod.
 
-Currently you have to run the script again once you restart the cluster as the token has expired. More details in the development documentation.
+Currently you have to run the script again once you restart the cluster as the token has expired.
 
 ## Requirements
 
