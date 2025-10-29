@@ -5,7 +5,7 @@ import typer
 class GitLabClient:
     def __init__(self, instance_url, private_token):
         self.instance_url = instance_url.rstrip("/")
-        self.api_url = f"{self.instance_url}/api/v4"
+        self.api_url = f"https://{self.instance_url}/api/v4"
         self.private_token = private_token
         self.headers = {"PRIVATE-TOKEN": self.private_token}
 

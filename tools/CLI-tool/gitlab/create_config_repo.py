@@ -65,17 +65,12 @@ def create_repo(client: GitLabClient, repo_name, org_name):
     if not project:
         project = client.create_project(repo_name, group_id, "Upstream repository")
         typer.echo(f"Repository '{repo_name}' created successfully.")
+        subprocess.run(["git", "clone", project["http_url_to_repo"]], check=True)
     else:
         typer.echo("Repository already exists.")
-
-    repos = subprocess.run(
-        "ls -a", shell=True, capture_output=True, text=True
-    ).stdout.split()
-    if repo_name not in repos:
         subprocess.run(["git", "clone", project["http_url_to_repo"]], check=True)
-        os.chdir(repo_name)
-    else:
-        os.chdir(repo_name)
+
+    os.chdir(repo_name)
     return project
 
 

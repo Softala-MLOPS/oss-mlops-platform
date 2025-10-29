@@ -262,6 +262,7 @@ def set_config(client: GitHubClient, org_name: str):
         exit("Error: The config seems to be malformed!")
 
     for key, value in config.items():
+        print(f"Setting up CI value {key}...")
         if key == "REMOTE_CLUSTER_SSH_PRIVATE_KEY_PATH":
             if value and os.path.isfile(value):
                 with open(value) as file:

@@ -18,6 +18,7 @@ class GitHubClient:
                     "--public",
                     "--description",
                     "Upstream repository",
+                    "--clone",
                 ],
                 check=True,
                 capture_output=True,
@@ -63,6 +64,9 @@ class GitHubClient:
 
     def set_secret(self, secret_name, secret_value, org_name):
         """Set a secret at the organization level."""
+        # Note: fixup secret value in case of empty secret (default IP, ETC...)
+        if len(secret_value) == 0:
+            secret_value = '""'
         try:
             subprocess.run(
                 [
