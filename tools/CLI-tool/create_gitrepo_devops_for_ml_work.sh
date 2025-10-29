@@ -10,10 +10,10 @@ cli_tool_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if ! command -v uv &> /dev/null
 then
     echo "uv could not be found, installing it..."
-    python3 -m pip install -q uv
+    curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
 
-python3 -m uv venv
+uv venv
 source venv/bin/activate
 uv pip install -q -r "${cli_tool_dir}/requirements.txt"
 
