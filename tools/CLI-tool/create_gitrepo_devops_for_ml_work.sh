@@ -10,11 +10,12 @@ cli_tool_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if ! command -v uv &> /dev/null
 then
     echo "uv could not be found, installing it..."
+    # Evil, but if uv says so...
     curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
 
-uv venv
-source venv/bin/activate
+uv venv --clear &> /dev/null
+source .venv/bin/activate
 uv pip install -q -r "${cli_tool_dir}/requirements.txt"
 
 # Check if script is run outside of git repository
@@ -54,7 +55,7 @@ fi
 read -p "Enter the name of the config repo (default: Config-%username-%Y-%m-%d-%tag): " repo_name
 
 if [[ -z "$repo_name" ]]; then
-    git_username=$(git config --global user.name | sed 's/ /-/g; s/[\d128-\d255]//g')
+    git_username=$(git config --global user.name | sed 's/ /-/g; s/[^a-zA-Z0-9]/-/g')
     repo_tag=$(openssl rand -hex 4)
     repo_name="Config-${git_username}-$(date +'%Y-%m-%d')-${repo_tag}"
 
