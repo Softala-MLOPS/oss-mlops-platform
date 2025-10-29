@@ -2,13 +2,16 @@ import os
 import subprocess
 import json
 import sys
+import time
 
-import json
-import subprocess
 import typer
+
+from gitlab_client import GitLabClient
 
 # Define the Typer app
 app = typer.Typer()
+
+GITLAB_CONFIG_FILE = os.path.expanduser("~/.gitlab-cli-config.json")
 
 
 # Use Typer to define repo_name as an argument
@@ -17,7 +20,18 @@ def main(repo_name: str, org_name: str):
     """
     Main function to fetch repo details and fork it.
     """
-    fork_repo(repo_name, org_name)
+    if not os.path.exists(GITLAB_CONFIG_FILE):
+        typer.echo(
+            "GitLab configuration not found. Please run 'configure_gitlab.py' first."
+        )
+        sys.exit(1)
+
+    with open(GITLAB_CONFIG_FILE, "r") as f:
+        config = json.load(f)
+
+    client = GitLabClient(config["instance_url"], config["token"])
+
+    fork_repo(client, repo_name, org_name)
 
 
 def get_working_repo_name(config_repo_name: str):
@@ -33,89 +47,55 @@ def get_working_repo_name(config_repo_name: str):
     return typer.prompt("Enter unique name for your working repository:", type=str)
 
 
-def check_working_repo_name_unique(org_name: str, working_repo_name: str):
-    try:
-        return (
-            subprocess.run(
-                ["glab", f"repo", "view", f"{org_name}/{working_repo_name}"],
-                check=False,
-            ).returncode
-            != 0
-        )
+def fork_repo(client: GitLabClient, repo_name: str, org_name: str):
+    """Fork the repository using the GitLabClient."""
+    project_to_fork = client.get_project(f"{org_name}/{repo_name}")
+    if not project_to_fork:
+        typer.echo(f"Project '{org_name}/{repo_name}' not found.")
+        sys.exit(1)
 
-        # Check if the repo ain't found
-    except:
-        # Yeah we're probably OK?
-        return True
+    group_to_fork_into = client.get_group_id(org_name)
+    if not group_to_fork_into:
+        typer.echo(f"Group '{org_name}' not found.")
+        sys.exit(1)
 
-
-def fork_repo(repo_name: str, org_name):
-    """Fork the repository using GitLab CLI."""
     working_repo_name = get_working_repo_name(repo_name)
 
-    while not check_working_repo_name_unique(org_name, working_repo_name):
+    while client.get_project(f"{org_name}/{working_repo_name}"):
         typer.echo(
             f"The repository name {working_repo_name} is already present in the organization! Please provide a different one."
         )
         working_repo_name = get_working_repo_name(repo_name)
 
-    response = subprocess.run(
-        [
-            "glab",
-            "api",
-            f"projects/{org_name}%2F{repo_name}/fork",
-            "--field",
-            f'path={working_repo_name} namespace_path={org_name}'
-        ]
-    )
-
-    if response.returncode == 0:
-        # this is unecessary cause the response should catch this error already but on the off chance it not ;>?
-
-        # Since we're forking via API, we have to do the wait/clone ourselves
-
-        while True:
-            try:
-                fork_status_resp = json.loads(subprocess.run(['glab', 'api', f'projects/{org_name}%2F{working_repo_name}/import'], capture_output=True, check=True, text=True).stdout)
-
-                import_status = fork_status_resp["import_status"]
-                
-                if import_status == "failed":
-                    print(f"Fork status failed! Resp: {fork_status_resp}")
-                    sys.exit(1337)
-                print(f"Fork status: {import_status}")
-                if import_status == "finished":
-                    break
-            except Exception as e:
-                print(f"Something went wrong during waiting for fork! Error: {e}")
-                sys.exit(1)
-
-        print(f"Cloning repository {working_repo_name}")        
-        subprocess.run(["glab", "repo", "clone", f"{org_name}/{working_repo_name}", working_repo_name])
-
-        try:
-            os.chdir(working_repo_name)
-        except FileNotFoundError:
-            print(f"{working_repo_name} does not exist")
-            exit(1)
-        subprocess.run(["git", "checkout", "-b", "staging", "origin/staging"])
-        subprocess.run(["git", "checkout", "-b", "production", "origin/production"])
-        subprocess.run(["git", "checkout", "-b", "origin/development"])
-        os.chdir("../")
-    else:
-        print(response)
-        print()
-        print(
-            f"Maybe {repo_name} doesn't exist both in local and remote repo of {org_name}?"
+    try:
+        forked_project = client.fork_project(
+            project_to_fork["id"], group_to_fork_into, working_repo_name
         )
-        exit(1)
+        typer.echo(f"Forking repository {repo_name} to {working_repo_name}...")
 
-        # This option was for the older versions of GH in order to clone the forked repo
+        # Wait for the fork to complete
+        while True:
+            project = client.get_project(f"{org_name}/{working_repo_name}")
+            if project and project.get("import_status") == "finished":
+                break
+            time.sleep(2)
 
-    # if sys.platform == "darwin":
-    #     subprocess.run(f'gh repo fork {owner}/{repo_name} --clone --fork-name "{working_repo_name}" --org {owner}', shell=True)
-    # elif sys.platform == "linux":
-    #     subprocess.run(f'gh repo fork {owner}/{repo_name} --clone --remote-name {working_repo_name} --org {owner}', shell=True)
+        typer.echo(f"Cloning repository {working_repo_name}")
+        subprocess.run(["git", "clone", forked_project["http_url_to_repo"]], check=True)
+
+        os.chdir(working_repo_name)
+        subprocess.run(
+            ["git", "checkout", "-b", "staging", "origin/staging"], check=True
+        )
+        subprocess.run(
+            ["git", "checkout", "-b", "production", "origin/production"], check=True
+        )
+        subprocess.run(["git", "checkout", "development"], check=True)
+        os.chdir("../")
+
+    except Exception as e:
+        typer.echo(f"Failed to fork repository: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

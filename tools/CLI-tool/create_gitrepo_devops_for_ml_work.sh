@@ -7,9 +7,15 @@ set -e
 cli_tool_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Install the requirements
-python3 -m venv venv
+if ! command -v uv &> /dev/null
+then
+    echo "uv could not be found, installing it..."
+    python3 -m pip install -q uv
+fi
+
+python3 -m uv venv
 source venv/bin/activate
-python3 -m pip install -q -r "${cli_tool_dir}/requirements.txt"
+uv pip install -q -r "${cli_tool_dir}/requirements.txt"
 
 # Check if script is run outside of git repository
 if ! python3 "${cli_tool_dir}/check_git_repo.py"; then
