@@ -16,7 +16,7 @@ fi
 
 uv venv --clear &> /dev/null
 source .venv/bin/activate
-uv pip install -q -r "${cli_tool_dir}/requirements.txt"
+uv pip install -r "${cli_tool_dir}/requirements.txt"
 
 # Check if script is run outside of git repository
 if ! python3 "${cli_tool_dir}/check_git_repo.py"; then
@@ -62,6 +62,8 @@ if [[ -z "$repo_name" ]]; then
     echo "No repository name specified, using generated repository name $repo_name"
 fi
 
+echo "Debug: python3 = $(which python3)"
+
 while true; do
     echo "Select an option:"
     echo "Which script(s) would you like to run?"
@@ -74,21 +76,21 @@ while true; do
 
     case $choice in
         1)
-            python3 "${cli_tool_dir}/configure_${platform}.py"
+            uv run "${cli_tool_dir}/configure_${platform}.py"
             ;;
         2)
-            python3 "${cli_tool_dir}/configure_${platform}.py"
-            python3 "${cli_tool_dir}/${platform}/create_config_repo.py" "$repo_name" "$org_name"
+            uv run "${cli_tool_dir}/configure_${platform}.py"
+            uv run "${cli_tool_dir}/${platform}/create_config_repo.py" "$repo_name" "$org_name"
             ;;
         3)
-            python3 "${cli_tool_dir}/configure_${platform}.py"
-            python3 "${cli_tool_dir}/${platform}/create_working_repo.py" "$repo_name" "$org_name"
+            uv run "${cli_tool_dir}/configure_${platform}.py"
+            uv run "${cli_tool_dir}/${platform}/create_working_repo.py" "$repo_name" "$org_name"
             exit 0
             ;;
         4)
-            python3 "${cli_tool_dir}/configure_${platform}.py"
-            python3 "${cli_tool_dir}/${platform}/create_config_repo.py" "$repo_name" "$org_name"
-            python3 "${cli_tool_dir}/${platform}/create_working_repo.py" "$repo_name" "$org_name"
+            uv run "${cli_tool_dir}/configure_${platform}.py"
+            uv run "${cli_tool_dir}/${platform}/create_config_repo.py" "$repo_name" "$org_name"
+            uv run "${cli_tool_dir}/${platform}/create_working_repo.py" "$repo_name" "$org_name"
             exit 0
             ;;
         5)

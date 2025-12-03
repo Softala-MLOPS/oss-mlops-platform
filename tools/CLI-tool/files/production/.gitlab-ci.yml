@@ -1,10 +1,10 @@
 stages:
   - run
-  
+
 run-notebook-in-production-environment:
   stage: run
   image: python:3.8
-  tags: [ 'docker' ]
+  tags: ["saas-linux-medium-amd64"]
   before_script:
     - mkdir -p ~/.ssh
     - echo "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
@@ -21,12 +21,12 @@ run-notebook-in-production-environment:
       - notebooks/demo-pipeline.ipynb
   rules:
     - if: '$CI_COMMIT_BRANCH == "production"'
-      changes: [ "notebooks/**" ]
+      changes: ["notebooks/**"]
 
 run-files-in-production-environment:
   stage: run
   image: python:3.8
-  tags: [ 'docker' ]
+  tags: ["saas-linux-medium-amd64"]
   before_script:
     - mkdir -p ~/.ssh
     - echo "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
@@ -42,4 +42,4 @@ run-files-in-production-environment:
       - run.log
   rules:
     - if: '$CI_COMMIT_BRANCH == "production"'
-      changes: [ "src/**" ]
+      changes: ["src/**"]

@@ -1,11 +1,16 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "typer",
+# ]
+# ///
+import json
 import os
 import subprocess
-import json
 import sys
 import time
 
 import typer
-
 from gitlab_client import GitLabClient
 
 # Define the Typer app
@@ -29,7 +34,7 @@ def main(repo_name: str, org_name: str):
     with open(GITLAB_CONFIG_FILE, "r") as f:
         config = json.load(f)
 
-    client = GitLabClient(config["instance_url"], config["token"])
+    client = GitLabClient(config["instance_url"])
 
     fork_repo(client, repo_name, org_name)
 

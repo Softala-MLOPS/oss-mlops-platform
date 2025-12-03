@@ -4,7 +4,7 @@ stages:
 run-notebook-in-staging-environment:
   stage: run
   image: python:3.8
-  tags: [ 'docker' ] 
+  tags: ["saas-linux-medium-amd64"]
   before_script:
     - mkdir -p ~/.ssh
     - echo "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
@@ -21,13 +21,12 @@ run-notebook-in-staging-environment:
       - notebooks/demo-pipeline.ipynb
   rules:
     - if: '$CI_COMMIT_BRANCH == "staging"'
-      changes: [ "notebooks/**" ]
-
+      changes: ["notebooks/**"]
 
 run-files-in-staging-environment:
   stage: run
   image: python:3.8
-  tags: [ 'docker' ]
+  tags: ["saas-linux-medium-amd64"]
   before_script:
     - mkdir -p ~/.ssh
     - echo "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
@@ -43,4 +42,4 @@ run-files-in-staging-environment:
       - run.log
   rules:
     - if: '$CI_COMMIT_BRANCH == "staging"'
-      changes: [ "src/**" ]
+      changes: ["src/**"]

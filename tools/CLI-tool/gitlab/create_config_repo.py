@@ -1,13 +1,20 @@
-import typer
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "pyyaml",
+#     "typer",
+# ]
+# ///
 import glob
+import json
+import os
+import pathlib
+import shutil
 import subprocess
 import sys
-import os
-import shutil
-import yaml
-import json
-import pathlib
 
+import typer
+import yaml
 from gitlab_client import GitLabClient
 
 # Define the Typer app
@@ -31,7 +38,7 @@ def main(repo_name: str, org_name: str):
     with open(GITLAB_CONFIG_FILE, "r") as f:
         config = json.load(f)
 
-    client = GitLabClient(config["instance_url"], config["token"])
+    client = GitLabClient(config["instance_url"])
 
     print(f"Working with repository: {repo_name}")
 

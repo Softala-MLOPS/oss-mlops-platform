@@ -1,23 +1,39 @@
-import requests
+import json
+import os
+import re
+import subprocess
+from urllib.parse import quote
+
 import typer
 
 
 class GitLabClient:
-    def __init__(self, instance_url, private_token):
+    def __init__(self, instance_url: str):
         self.instance_url = instance_url.rstrip("/")
-        self.api_url = f"https://{self.instance_url}/api/v4"
-        self.private_token = private_token
-        self.headers = {"PRIVATE-TOKEN": self.private_token}
+
+        if self.instance_url.startswith("https://"):
+            self.instance_url = self.instance_url[8:]
+
+        print("Using glab CLI to interact with GitLab API")
+
+    def _run_glab_api(self, command, check=True):
+        env = os.environ.copy()
+        env["GITLAB_HOST"] = self.instance_url
+        # The token is handled by glab auth
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            check=check,
+            env=env,
+        )
+        return result
 
     def get_group_id(self, group_name):
         """Get the ID of a GitLab group."""
-        response = requests.get(
-            f"{self.api_url}/groups",
-            headers=self.headers,
-            params={"search": group_name},
-        )
-        response.raise_for_status()
-        groups = response.json()
+        command = ["glab", "api", f"groups?search={quote(group_name)}"]
+        result = self._run_glab_api(command)
+        groups = json.loads(result.stdout)
         for group in groups:
             if group["path"] == group_name:
                 return group["id"]
@@ -25,56 +41,95 @@ class GitLabClient:
 
     def create_project(self, project_name, group_id, description):
         """Create a new project in a group."""
-        data = {
-            "name": project_name,
-            "namespace_id": group_id,
-            "description": description,
-            "visibility": "public",
-        }
-        response = requests.post(
-            f"{self.api_url}/projects", headers=self.headers, json=data
-        )
-        response.raise_for_status()
-        return response.json()
+        command = [
+            "glab",
+            "api",
+            "projects",
+            "-X",
+            "POST",
+            "-f",
+            f"name={project_name}",
+            "-f",
+            f"namespace_id={group_id}",
+            "-f",
+            f"description={description}",
+            "-f",
+            "visibility=public",
+        ]
+        result = self._run_glab_api(command)
+        return json.loads(result.stdout)
 
     def get_project(self, project_path):
         """Get a project by its path."""
-        response = requests.get(
-            f"{self.api_url}/projects/{project_path.replace('/', '%2F')}",
-            headers=self.headers,
-        )
-        if response.status_code == 404:
-            return None
-        response.raise_for_status()
-        return response.json()
+        # quote with safe='' to encode '/'
+        command = ["glab", "api", f"projects/{quote(project_path, safe='')}"]
+        result = self._run_glab_api(command, check=False)
+        if result.returncode != 0:
+            print(f"get_project failed, stderr: {result.stderr}")
+            if "404 Project Not Found" in result.stderr:
+                return None
+            else:
+                # raise error for other non-zero exit codes
+                result.check_returncode()
+        return json.loads(result.stdout)
 
     def fork_project(self, project_id, group_id, fork_name):
         """Fork a project into a group."""
-        data = {"namespace_id": group_id, "name": fork_name, "path": fork_name}
-        response = requests.post(
-            f"{self.api_url}/projects/{project_id}/fork",
-            headers=self.headers,
-            json=data,
-        )
-        response.raise_for_status()
-        return response.json()
+        command = [
+            "glab",
+            "api",
+            f"projects/{project_id}/fork",
+            "-X",
+            "POST",
+            "-f",
+            f"namespace_id={group_id}",
+            "-f",
+            f"name={fork_name}",
+            "-f",
+            f"path={fork_name}",
+        ]
+        result = self._run_glab_api(command)
+        return json.loads(result.stdout)
 
     def set_group_variable(self, group_id, key, value):
         """Set a variable at the group level."""
-        data = {"key": key, "value": value}
-        response = requests.post(
-            f"{self.api_url}/groups/{group_id}/variables",
-            headers=self.headers,
-            json=data,
-        )
-        response.raise_for_status()
-        return response.json()
+        command = [
+            "glab",
+            "variable",
+            "set",
+            key,
+            "-v",
+            f'"{value}"',
+            "-g",
+            f"{group_id}",
+        ]
+        result = self._run_glab_api(command, check=False)
+
+        if result.returncode != 0:
+            # Key might be taken
+            if "has already been taken" in result.stderr:
+                print(f"Key {key} has already been taken, updating...")
+                command = [
+                    "glab",
+                    "variable",
+                    "update",
+                    key,
+                    "-v",
+                    f'"{value}"',
+                    "-g",
+                    f"{group_id}",
+                ]
+                self._run_glab_api(command)
 
     def set_project_default_branch(self, project_id, branch_name):
         """Set the default branch for a project."""
-        data = {"default_branch": branch_name}
-        response = requests.put(
-            f"{self.api_url}/projects/{project_id}", headers=self.headers, json=data
-        )
-        response.raise_for_status()
-        return response.json()
+        command = [
+            "glab",
+            "api",
+            f"projects/{project_id}",
+            "-X",
+            "PUT",
+            "-f",
+            f"default_branch={branch_name}",
+        ]
+        self._run_glab_api(command)

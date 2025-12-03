@@ -4,7 +4,7 @@ stages:
 run-notebook-in-development-environment:
   stage: run
   image: python:3.8
-  tags: [ 'self-hosted' ]
+  tags: ["self-hosted"]
   before_script:
     - echo "Installing Jupyter"
     - python -m pip install --upgrade pip
@@ -18,12 +18,12 @@ run-notebook-in-development-environment:
       - notebooks/demo-pipeline.ipynb
   rules:
     - if: '$CI_COMMIT_BRANCH == "development"'
-      changes: [ "notebooks/**" ]
+      changes: ["notebooks/**"]
 
 run-files-in-development-environment:
   stage: run
   image: python:3.8
-  tags: [ 'self-hosted' ]
+  tags: ["self-hosted"]
   before_script:
     - echo "Installing Python deps"
     - python -m pip install --upgrade pip
@@ -37,4 +37,4 @@ run-files-in-development-environment:
       - run.log
   rules:
     - if: '$CI_COMMIT_BRANCH == "development"'
-      changes: [ "src/**" ]
+      changes: ["src/**"]
