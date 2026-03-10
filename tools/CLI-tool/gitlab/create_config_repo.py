@@ -72,12 +72,18 @@ def create_repo(client: GitLabClient, repo_name, org_name):
     if not project:
         project = client.create_project(repo_name, group_id, "Upstream repository")
         typer.echo(f"Repository '{repo_name}' created successfully.")
-        subprocess.run(["git", "clone", project["http_url_to_repo"]], check=True)
     else:
         typer.echo("Repository already exists.")
-        subprocess.run(["git", "clone", project["http_url_to_repo"]], check=True)
+
+    clone_url = project.get("http_url_to_repo") if isinstance(project, dict) else None
+    if not clone_url:
+        typer.echo(f"GitLab returned an unexpected project payload: {project}")
+        sys.exit(1)
+
+    subprocess.run(["glab", "repo", "clone", project["path_with_namespace"]], check=True)
 
     os.chdir(repo_name)
+    subprocess.run(["git", "remote", "set-url", "origin", clone_url], check=True)
     return project
 
 
@@ -318,3 +324,6 @@ def set_config(client: GitLabClient, org_name: str):
 
 if __name__ == "__main__":
     app()
+
+
+

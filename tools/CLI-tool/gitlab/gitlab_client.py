@@ -64,14 +64,26 @@ class GitLabClient:
         # quote with safe='' to encode '/'
         command = ["glab", "api", f"projects/{quote(project_path, safe='')}"]
         result = self._run_glab_api(command, check=False)
+        payload = {}
+        if result.stdout.strip():
+            payload = json.loads(result.stdout)
+
         if result.returncode != 0:
             print(f"get_project failed, stderr: {result.stderr}")
-            if "404 Project Not Found" in result.stderr:
+            message = str(payload.get("message", ""))
+            if "404 Project Not Found" in result.stderr or "Project Not Found" in message:
                 return None
             else:
                 # raise error for other non-zero exit codes
                 result.check_returncode()
-        return json.loads(result.stdout)
+
+        if isinstance(payload, dict):
+            message = str(payload.get("message", ""))
+            if message and "http_url_to_repo" not in payload:
+                if "404" in message or "Project Not Found" in message:
+                    return None
+
+        return payload
 
     def fork_project(self, project_id, group_id, fork_name):
         """Fork a project into a group."""
@@ -133,3 +145,4 @@ class GitLabClient:
             f"default_branch={branch_name}",
         ]
         self._run_glab_api(command)
+

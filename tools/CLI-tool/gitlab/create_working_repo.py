@@ -86,9 +86,10 @@ def fork_repo(client: GitLabClient, repo_name: str, org_name: str):
             time.sleep(2)
 
         typer.echo(f"Cloning repository {working_repo_name}")
-        subprocess.run(["git", "clone", forked_project["http_url_to_repo"]], check=True)
+        subprocess.run(["glab", "repo", "clone", forked_project["path_with_namespace"]], check=True)
 
         os.chdir(working_repo_name)
+        subprocess.run(["git", "remote", "set-url", "origin", forked_project["http_url_to_repo"]], check=True)
         subprocess.run(
             ["git", "checkout", "-b", "staging", "origin/staging"], check=True
         )
@@ -105,3 +106,5 @@ def fork_repo(client: GitLabClient, repo_name: str, org_name: str):
 
 if __name__ == "__main__":
     app()
+
+
