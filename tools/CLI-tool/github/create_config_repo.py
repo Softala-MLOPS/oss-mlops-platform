@@ -82,24 +82,48 @@ def copy_files():
     """Copy branch-specific files."""
     script_dir = os.path.dirname(os.path.realpath(__file__))
     files_dir = os.path.join(script_dir, "..", "files")
+    
+    # Define the file to clean up (relative path since we are in the repo root)
+    gitlab_ci_file = '.gitlab-ci.yml'
 
+    # --- DEVELOPMENT BRANCH ---
     subprocess.run(["git", "checkout", "development"], check=True)
     shutil.copytree(os.path.join(files_dir, "development"), ".", dirs_exist_ok=True)
     shutil.copytree(os.path.join(files_dir, "common"), ".", dirs_exist_ok=True)
+    
+    # 🧹 Clean up redundant template file
+    if os.path.exists(gitlab_ci_file):
+        os.remove(gitlab_ci_file)
+        print("🧹 Removed redundant .gitlab-ci.yml file on the development branch.")
+
     subprocess.run(["git", "add", "."], check=True)
     subprocess.run(["git", "commit", "-m", "Add branch specific files"], check=True)
     subprocess.run(["git", "push"], check=True)
 
+    # --- PRODUCTION BRANCH ---
     subprocess.run(["git", "checkout", "production"], check=True)
     shutil.copytree(os.path.join(files_dir, "production"), ".", dirs_exist_ok=True)
     shutil.copytree(os.path.join(files_dir, "common"), ".", dirs_exist_ok=True)
+    
+    # 🧹 Clean up redundant template file
+    if os.path.exists(gitlab_ci_file):
+        os.remove(gitlab_ci_file)
+        print("🧹 Removed redundant .gitlab-ci.yml file on the production branch.")
+
     subprocess.run(["git", "add", "."], check=True)
     subprocess.run(["git", "commit", "-m", "Add production files"], check=True)
     subprocess.run(["git", "push"], check=True)
 
+    # --- STAGING BRANCH ---
     subprocess.run(["git", "checkout", "staging"], check=True)
     shutil.copytree(os.path.join(files_dir, "staging"), ".", dirs_exist_ok=True)
     shutil.copytree(os.path.join(files_dir, "common"), ".", dirs_exist_ok=True)
+    
+    # 🧹 Clean up redundant template file
+    if os.path.exists(gitlab_ci_file):
+        os.remove(gitlab_ci_file)
+        print("🧹 Removed redundant .gitlab-ci.yml file on the staging branch.")
+
     subprocess.run(["git", "add", "."], check=True)
     subprocess.run(["git", "commit", "-m", "Add staging files"], check=True)
     subprocess.run(["git", "push"], check=True)
