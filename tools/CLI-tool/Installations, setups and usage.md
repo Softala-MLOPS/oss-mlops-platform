@@ -509,7 +509,9 @@ If a non-exact path for the SSH key file is passed, the script will search for t
 
   ******
 
-## Step 4: Enabling GitHub Actions and Installing GitHub Actions runner
+## Step 4: Enabling CI/CD and Installing Local Runner
+
+### Option A: For GitHub (GitHub Actions)
 
 After the repositories are made you may need to enable the GitHub Actions for the working repository. This can be done from the GitHub site by navigating to the working repository and it's Actions tab and clicking the big green button. You also need a local-hosted GitHub Actions runner which is provided by GitHub. The runner is bound to a single GitHub organization or a single repository. It can be changed later, see note at the end of this step.
 
@@ -524,13 +526,62 @@ After the repositories are made you may need to enable the GitHub Actions for th
 
 You can restart the runner after the next computer restart by navigating to the runner's `actions-runner/` folder and running:
 
-```
+```bash
 ./run.sh
-```
+````
 
 **Note about reconfiguring the runner**
 
 If you need to change the repository runners is connected to, you need to either locate to he repository/organization the runner is connected to in GitHub site and remove it (GitHub will give you the script for it) OR delete the *hidden* `.runner` file in the `actions-runner/` folder and redo the step with the new token. *Also do note the runner OS version, don't be like me and try to use the Windows version on Linux.*
+
+### Option B: For GitLab (GitLab CI/CD)
+
+To run the `.gitlab-ci.yml` pipelines locally to interact with your local Kubeflow cluster, you need to install and register a **GitLab Runner** on your machine.
+
+**1. Install GitLab Runner (Linux / WSL)**
+
+Open your terminal and run the following verified commands:
+
+```bash
+# Download the binary (Using direct S3 link to avoid URL parsing errors)
+sudo curl -L --output /usr/local/bin/gitlab-runner "[https://s3.dualstack.us-east-1.amazonaws.com/gitlab-runner-downloads/latest/binaries/gitlab-runner-linux-amd64](https://s3.dualstack.us-east-1.amazonaws.com/gitlab-runner-downloads/latest/binaries/gitlab-runner-linux-amd64)"
+
+# Give it permissions to execute
+sudo chmod +x /usr/local/bin/gitlab-runner
+
+# Install as a user service (Prevents flag errors in certain OS versions)
+gitlab-runner install --user-service --working-directory=$HOME
+```
+
+**2. Register the Runner**
+
+1.  Navigate to your working repository on the GitLab web page.
+2.  On the left sidebar, go to **Settings \> CI/CD** and expand the **Runners** section.
+3.  Click on **New project runner** (you can leave tags empty) and click **Create runner**.
+4.  Copy the registration token/command provided.
+5.  In your terminal, run the registration command:
+    ```bash
+    gitlab-runner register --url [https://gitlab.com](https://gitlab.com) --token <YOUR_TOKEN>
+    ```
+    *(When prompted for the executor, type: `shell`)*
+
+**3. Configure Permissions & Run**
+
+Ensure your current user belongs to the docker group so the pipeline can build images:
+
+```bash
+sudo usermod -aG docker $USER
+```
+
+Finally, since background system services often fail in WSL (`exit status 5`), run the runner directly in user-mode:
+
+```bash
+gitlab-runner run
+```
+
+*(Leave this terminal window open while you want your GitLab pipelines to run).*
+
+-----
 
 **Post setup**
 
