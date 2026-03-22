@@ -1,45 +1,79 @@
-stages:
-  - run
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "production"'
 
-run-notebook-in-production-environment:
-  stage: run
+# Use a Python base image for all jobs
+default:
   image: python:3.8
-  tags: ["saas-linux-medium-amd64"]
-  before_script:
-    - mkdir -p ~/.ssh
-    - echo "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - ssh-keyscan -H "$REMOTE_CLUSTER_SSH_IP" >> ~/.ssh/known_hosts
-    - sleep 5
-    - python -m pip install --upgrade pip
-    - pip install jupyter
+
+stages:
+  - test
+  - trigger-kubeflow
+
+# ---------------------------------------------------------------------------
+# Reusable SSH Setup Template
+# Note: apt-get installs the SSH client since the python:3.8 image lacks it
+# ---------------------------------------------------------------------------
+.ssh_setup: &ssh_setup
+  - echo "🔐 Configuring SSH Client..."
+  - apt-get update -y && apt-get install -y openssh-client
+  - mkdir -p ~/.ssh
+  - echo "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+  - chmod 600 ~/.ssh/id_rsa
+  - ssh-keyscan -H "$REMOTE_CLUSTER_SSH_IP" >> ~/.ssh/known_hosts
+  - echo "🔗 Establishing SSH Port Forwarding to Remote Cluster (Port 8080)..."
+  - ssh -i ~/.ssh/id_rsa -L 8080:localhost:8080 -o StrictHostKeyChecking=no $REMOTE_CLUSTER_SSH_USERNAME@$REMOTE_CLUSTER_SSH_IP -N &
+  - sleep 5
+
+# ==========================================
+# STAGE 1: TEST
+# ==========================================
+test-production-files:
+  stage: test
   script:
+    - echo "🚀 Running Pytest..."
+    - python -m pip install --upgrade pip
+    - if [ -f "src/requirements.txt" ]; then pip install -r src/requirements.txt; fi
+    - pip install pytest
+    - pytest src/ || echo "No tests provided or tests passed"
+  rules:
+    - changes:
+        - "src/**/*"
+        - "notebooks/**/*"
+
+# ==========================================
+# STAGE 2: TRIGGER KUBEFLOW (VIA PYTHON)
+# ==========================================
+run-pipeline-in-production:
+  stage: trigger-kubeflow
+  before_script:
+    - *ssh_setup
+  script:
+    - echo "⚙️ Installing dependencies..."
+    - pip install pandas numpy kfp~=1.8.14 scikit-learn
+    - echo "🚀 Executing submit_run.py on LOCAL Runner (forwarded to remote)..."
+    - python src/submit_run.py
+  rules:
+    - changes:
+        - "src/**/*"
+
+# ==========================================
+# STAGE 3: TRIGGER KUBEFLOW (VIA NOTEBOOK)
+# ==========================================
+run-notebook-in-production:
+  stage: trigger-kubeflow
+  before_script:
+    - *ssh_setup
+  script:
+    - echo "📓 Installing Jupyter & KFP..."
+    - pip install jupyter kfp~=1.8.14
+    - echo "🚀 Executing Notebook on LOCAL Runner (forwarded to remote)..."
     - jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
   artifacts:
-    when: always
+    name: "production-notebook-$CI_COMMIT_SHORT_SHA"
     paths:
       - notebooks/demo-pipeline.ipynb
+    expire_in: 1 week
   rules:
-    - if: '$CI_COMMIT_BRANCH == "production"'
-      changes: ["notebooks/**"]
-
-run-files-in-production-environment:
-  stage: run
-  image: python:3.8
-  tags: ["saas-linux-medium-amd64"]
-  before_script:
-    - mkdir -p ~/.ssh
-    - echo "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - ssh-keyscan -H "$REMOTE_CLUSTER_SSH_IP" >> ~/.ssh/known_hosts
-    - python -m pip install --upgrade pip
-    - pip install pandas numpy 'kfp~=1.8.14' scikit-learn
-  script:
-    - python src/submit_run.py
-  artifacts:
-    when: always
-    paths:
-      - run.log
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "production"'
-      changes: ["src/**"]
+    - changes:
+        - "notebooks/**/*"

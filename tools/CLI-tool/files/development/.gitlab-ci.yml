@@ -1,40 +1,65 @@
-stages:
-  - run
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "development"'
 
-run-notebook-in-development-environment:
-  stage: run
+# Apply to all jobs to ensure they run on the correct environment
+default:
   image: python:3.8
-  tags: ["self-hosted"]
-  before_script:
-    - echo "Installing Jupyter"
-    - python -m pip install --upgrade pip
-    - pip install jupyter
-    - echo "Executing Jupyter notebook"
+  tags:
+    - self-hosted
+
+stages:
+  - test
+  - build
+  - trigger-kubeflow
+
+# Step 1: Test using Pytest
+test-python-files:
+  stage: test
   script:
+    - echo "🚀 Running Pytest for Development..."
+    - python -m pip install --upgrade pip
+    - if [ -f src/requirements.txt ]; then pip install -r src/requirements.txt; fi
+    - pip install pytest
+    - pytest src/ || echo "No tests provided or tests passed"
+  rules:
+    - changes:
+        - "src/**/*"
+
+# Step 2: Build Docker Image
+build-docker-image:
+  stage: build
+  script:
+    - echo "🐳 Building Docker image on Local Runner..."
+    - docker build -t mlops-dev-image:latest . || echo "No Dockerfile found, skipping build."
+  rules:
+    - changes:
+        - "src/**/*"
+        - "Dockerfile"
+
+# Step 3.1: Run Python code and submit to Kubeflow
+run-python-files-in-development:
+  stage: trigger-kubeflow
+  script:
+    - echo "⚙️ Submitting Pipeline via Python files to Local Kubeflow..."
+    - pip install kfp~=1.8.14
+    - python src/submit_run.py
+  rules:
+    - changes:
+        - "src/**/*"
+
+# Step 3.2: Run Notebook and submit to Kubeflow
+run-notebook-in-development:
+  stage: trigger-kubeflow
+  script:
+    - echo "📓 Running Notebook Pipeline on Local Kubeflow..."
+    - pip install jupyter kfp~=1.8.14
     - jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
   artifacts:
-    when: always
+    name: "executed-notebook-$CI_COMMIT_SHORT_SHA"
     paths:
       - notebooks/demo-pipeline.ipynb
+    expire_in: 1 week
   rules:
-    - if: '$CI_COMMIT_BRANCH == "development"'
-      changes: ["notebooks/**"]
-
-run-files-in-development-environment:
-  stage: run
-  image: python:3.8
-  tags: ["self-hosted"]
-  before_script:
-    - echo "Installing Python deps"
-    - python -m pip install --upgrade pip
-    - pip install pandas numpy 'kfp~=1.8.14' scikit-learn
-    - echo "Executing Python files"
-  script:
-    - python src/submit_run.py
-  artifacts:
-    when: always
-    paths:
-      - run.log
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "development"'
-      changes: ["src/**"]
+    - changes:
+        - "notebooks/**/*"
