@@ -42,7 +42,7 @@ stages:
     
   - ssh-keyscan -H "$REMOTE_CLUSTER_SSH_IP" >> ~/.ssh/known_hosts
   - echo "🔗 Establishing SSH Port Forwarding to Remote Cluster (Port 80)..."
-  - ssh -i ~/.ssh/id_rsa -L 8080:localhost:80 -o StrictHostKeyChecking=no -o BatchMode=yes $REMOTE_CLUSTER_SSH_USERNAME@$REMOTE_CLUSTER_SSH_IP -N -f
+  - ssh -i ~/.ssh/id_rsa -L 8080:127.0.0.1:8080 -o StrictHostKeyChecking=no -o BatchMode=yes $REMOTE_CLUSTER_SSH_USERNAME@$REMOTE_CLUSTER_SSH_IP -N -f
   - sleep 5
 
 # ==========================================
