@@ -342,8 +342,10 @@ def set_config(client: GitLabClient, org_name: str):
                     f'SSH key path "{value}" does not point to a valid SSH key! Skipping...'
                 )
         else:
-            used_val = value if value else '""'
-            client.set_group_variable(group_id, key, used_val)
+            if value: 
+                client.set_group_variable(group_id, key, value)
+            else:
+                print(f'"{key}" is empty! Skipping...')
 
 
 if __name__ == "__main__":
