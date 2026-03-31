@@ -23,7 +23,8 @@ stages:
   - env | grep REMOTE || echo "No variables found starting with REMOTE"
   
   # FALLBACK: If FILE variable fails, switch to using normal variable
-  - if [ -f "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" ]; then
+  - |
+    if [ -f "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" ]; then
       echo "File variable exists. Copying...";
       cp "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" ~/.ssh/id_rsa;
     else
@@ -34,7 +35,8 @@ stages:
   - chmod 600 ~/.ssh/id_rsa
   
   # Skip keyscan if IP is empty to identify the next error
-  - if [ -z "$REMOTE_CLUSTER_SSH_IP" ]; then
+  - |
+    if [ -z "$REMOTE_CLUSTER_SSH_IP" ]; then
       echo "❌ CRITICAL ERROR: IP variable is empty. Stopping pipeline."; exit 1;
     fi
     
