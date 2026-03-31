@@ -18,11 +18,12 @@ stages:
   - echo "🔐 Configuring SSH Client..."
   - apt-get update -y && apt-get install -y openssh-client
   - mkdir -p ~/.ssh
-  - echo "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+  - touch ~/.ssh/id_rsa
   - chmod 600 ~/.ssh/id_rsa
+  - awk '{print}' <<< "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
   - ssh-keyscan -H "$REMOTE_CLUSTER_SSH_IP" >> ~/.ssh/known_hosts
-  - echo "🔗 Establishing SSH Port Forwarding to Remote Cluster (Port 8080)..."
-  - ssh -i ~/.ssh/id_rsa -L 8080:localhost:8080 -o StrictHostKeyChecking=no $REMOTE_CLUSTER_SSH_USERNAME@$REMOTE_CLUSTER_SSH_IP -N &
+  - echo "🔗 Establishing SSH Port Forwarding to Remote Cluster (Port 80)..."
+  - ssh -i ~/.ssh/id_rsa -L 8080:localhost:80 -o StrictHostKeyChecking=no -o BatchMode=yes $REMOTE_CLUSTER_SSH_USERNAME@$REMOTE_CLUSTER_SSH_IP -N -f
   - sleep 5
 
 # ==========================================
