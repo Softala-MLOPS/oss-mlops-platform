@@ -18,8 +18,26 @@ stages:
   - echo "🔐 Configuring SSH Client..."
   - apt-get update -y && apt-get install -y openssh-client
   - mkdir -p ~/.ssh
-  - cp "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" ~/.ssh/id_rsa
+  
+  # DEBUG: Print all variables starting with REMOTE
+  - env | grep REMOTE || echo "No variables found starting with REMOTE"
+  
+  # FALLBACK: If FILE variable fails, switch to using normal variable
+  - if [ -f "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" ]; then
+      echo "File variable exists. Copying...";
+      cp "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" ~/.ssh/id_rsa;
+    else
+      echo "Variable is NOT A FILE. Attempting to print content...";
+      printf "%s\n" "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa;
+    fi
+    
   - chmod 600 ~/.ssh/id_rsa
+  
+  # Skip keyscan if IP is empty to identify the next error
+  - if [ -z "$REMOTE_CLUSTER_SSH_IP" ]; then
+      echo "❌ CRITICAL ERROR: IP variable is empty. Stopping pipeline."; exit 1;
+    fi
+    
   - ssh-keyscan -H "$REMOTE_CLUSTER_SSH_IP" >> ~/.ssh/known_hosts
   - echo "🔗 Establishing SSH Port Forwarding to Remote Cluster (Port 80)..."
   - ssh -i ~/.ssh/id_rsa -L 8080:localhost:80 -o StrictHostKeyChecking=no -o BatchMode=yes $REMOTE_CLUSTER_SSH_USERNAME@$REMOTE_CLUSTER_SSH_IP -N -f
