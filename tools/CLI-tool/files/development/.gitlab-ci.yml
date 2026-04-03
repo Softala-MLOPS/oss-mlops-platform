@@ -43,6 +43,8 @@ build-docker-image:
 # Step 3.1: Run Python code and submit to Kubeflow
 run-python-files-in-development:
   stage: trigger-kubeflow
+  variables:
+    KFP_HOST: "http://host.docker.internal:8080/pipeline"
   script:
     - echo "⚙️ Submitting Pipeline via Python files to Local Kubeflow..."
     - pip install --upgrade pip
