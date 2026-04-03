@@ -2,7 +2,7 @@ workflow:
   rules:
     - if: '$CI_COMMIT_BRANCH == "development"'
 
-# Apply to all jobs to ensure they run on the correct environment
+# Apply to all jobs to ensure they run in the correct environment
 default:
   image: python:3.8
   tags:
@@ -13,20 +13,25 @@ stages:
   - build
   - trigger-kubeflow
 
-# Step 1: Test using Pytest
+# Step 1: Run tests using Pytest
 test-python-files:
   stage: test
   script:
     - echo "🚀 Running Pytest for Development..."
-    - python3 -m pip install --upgrade pip
-    - if [ -f src/requirements.txt ]; then python3 -m pip install -r src/requirements.txt; fi
-    - python3 -m pip install pytest
-    - python3 -m pytest src/ || echo "No tests provided or tests passed"
+    # Create and activate virtual environment
+    - python3 -m venv venv
+    - source venv/bin/activate
+    # Install dependencies into the virtual environment
+    - pip install --upgrade pip
+    - if [ -f src/requirements.txt ]; then pip install -r src/requirements.txt; fi
+    - pip install pytest
+    # Run tests
+    - pytest src/ || echo "No tests provided or tests passed"
   rules:
     - changes:
         - "src/**/*"
 
-# Step 2: Build Docker Image
+# Step 2: Build Docker image
 build-docker-image:
   stage: build
   script:
@@ -37,13 +42,16 @@ build-docker-image:
         - "src/**/*"
         - "Dockerfile"
 
-# Step 3.1: Run Python code and submit to Kubeflow
+# Step 3.1: Run Python pipeline and submit to Kubeflow
 run-python-files-in-development:
   stage: trigger-kubeflow
   script:
     - echo "⚙️ Submitting Pipeline via Python files to Local Kubeflow..."
-    - python3 -m pip install kfp~=1.8.14
-    - python3 src/submit_run.py
+    # Create and activate virtual environment
+    - python3 -m venv venv
+    - source venv/bin/activate
+    - pip install kfp~=1.8.14
+    - python src/submit_run.py
   rules:
     - changes:
         - "src/**/*"
@@ -53,8 +61,11 @@ run-notebook-in-development:
   stage: trigger-kubeflow
   script:
     - echo "📓 Running Notebook Pipeline on Local Kubeflow..."
-    - python3 -m pip install jupyter kfp~=1.8.14
-    - python3 -m jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
+    # Create and activate virtual environment
+    - python3 -m venv venv
+    - source venv/bin/activate
+    - pip install jupyter kfp~=1.8.14
+    - jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
   artifacts:
     name: "executed-notebook-$CI_COMMIT_SHORT_SHA"
     paths:
