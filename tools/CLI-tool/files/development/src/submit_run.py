@@ -9,13 +9,17 @@ from pipelines.pipeline_arg.pipeline_arg import arguments
 
 def submit_pipeline():
 
-    # 1. Get the Kubeflow address and namespace from environment variables (Default is None if not set)
+    # 1. Get the Kubeflow address, namespace, and user from environment variables (Default is None if not set)
     kfp_host = os.environ.get("KFP_HOST")
     kfp_namespace = os.environ.get("KFP_NAMESPACE")
+    kfp_user_email = os.environ.get("KFP_USER_EMAIL", "user@example.com")
 
     # 2. Initialize the client with the specific host
     # If kfp_host = None, it will fall back to the default behavior (looking for ~/.kube/config)
     client = kfp.Client(host=kfp_host, namespace=kfp_namespace) 
+
+    # 3. Set the user
+    client.api_client.default_headers['kubeflow-userid'] = kfp_user_email
     
     # Define your experiment and run name
     experiment_name = "demo-experiment"
