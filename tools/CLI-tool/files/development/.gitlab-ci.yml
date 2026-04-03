@@ -49,6 +49,7 @@ run-python-files-in-development:
     - echo "⚙️ Submitting Pipeline via Python files to Local Kubeflow..."
     - pip install --upgrade pip
     - pip install kfp~=1.8.14
+    - env | grep KFP_HOST
     - python src/submit_run.py
   rules:
     - changes:
