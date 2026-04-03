@@ -2,7 +2,7 @@ workflow:
   rules:
     - if: '$CI_COMMIT_BRANCH == "development"'
 
-# Apply to all jobs to ensure they run in the correct environment
+# Run on a standard Python 3.8 environment
 default:
   image: python:3.8
   tags:
@@ -13,27 +13,25 @@ stages:
   - build
   - trigger-kubeflow
 
-# Step 1: Run tests using Pytest
+# Step 1: Test using Pytest
 test-python-files:
   stage: test
   script:
     - echo "🚀 Running Pytest for Development..."
-    # Create and activate virtual environment
-    - python3 -m venv venv
-    - source venv/bin/activate
-    # Install dependencies into the virtual environment
     - pip install --upgrade pip
     - if [ -f src/requirements.txt ]; then pip install -r src/requirements.txt; fi
     - pip install pytest
-    # Run tests
     - pytest src/ || echo "No tests provided or tests passed"
   rules:
     - changes:
         - "src/**/*"
 
-# Step 2: Build Docker image
+# Step 2: Build Docker Image
+# This job uses Docker CLI. Since docker.sock is mounted (in Step 2 setup),
+# the docker:latest image can communicate with the host Docker daemon.
 build-docker-image:
   stage: build
+  image: docker:latest 
   script:
     - echo "🐳 Building Docker image on Local Runner..."
     - docker build -t mlops-dev-image:latest . || echo "No Dockerfile found, skipping build."
@@ -42,14 +40,12 @@ build-docker-image:
         - "src/**/*"
         - "Dockerfile"
 
-# Step 3.1: Run Python pipeline and submit to Kubeflow
+# Step 3.1: Run Python code and submit to Kubeflow
 run-python-files-in-development:
   stage: trigger-kubeflow
   script:
     - echo "⚙️ Submitting Pipeline via Python files to Local Kubeflow..."
-    # Create and activate virtual environment
-    - python3 -m venv venv
-    - source venv/bin/activate
+    - pip install --upgrade pip
     - pip install kfp~=1.8.14
     - python src/submit_run.py
   rules:
@@ -61,9 +57,7 @@ run-notebook-in-development:
   stage: trigger-kubeflow
   script:
     - echo "📓 Running Notebook Pipeline on Local Kubeflow..."
-    # Create and activate virtual environment
-    - python3 -m venv venv
-    - source venv/bin/activate
+    - pip install --upgrade pip
     - pip install jupyter kfp~=1.8.14
     - jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
   artifacts:
