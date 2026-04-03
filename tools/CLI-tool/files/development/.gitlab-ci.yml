@@ -57,6 +57,8 @@ run-python-files-in-development:
 # Step 3.2: Run Notebook and submit to Kubeflow
 run-notebook-in-development:
   stage: trigger-kubeflow
+  variables:
+    KFP_HOST: "http://host.docker.internal:8080/pipeline"
   script:
     - echo "📓 Running Notebook Pipeline on Local Kubeflow..."
     - pip install --upgrade pip
