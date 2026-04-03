@@ -43,10 +43,10 @@ build-docker-image:
 # Step 3.1: Run Python code and submit to Kubeflow
 run-python-files-in-development:
   stage: trigger-kubeflow
-  variables:
-    KFP_HOST: $KFP_HOST
   script:
     - echo "⚙️ Submitting Pipeline via Python files to Local Kubeflow..."
+    - echo "⚙️ Checking environment variable..."
+    - echo "KFP_HOST is currently $KFP_HOST"
     - pip install --upgrade pip
     - pip install kfp~=1.8.14
     - env | grep KFP_HOST
@@ -58,10 +58,10 @@ run-python-files-in-development:
 # Step 3.2: Run Notebook and submit to Kubeflow
 run-notebook-in-development:
   stage: trigger-kubeflow
-  variables:
-    KFP_HOST: $KFP_HOST
   script:
     - echo "📓 Running Notebook Pipeline on Local Kubeflow..."
+    - echo "⚙️ Checking environment variable..."
+    - echo "KFP_HOST is currently $KFP_HOST"
     - pip install --upgrade pip
     - pip install jupyter kfp~=1.8.14
     - jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
