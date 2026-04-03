@@ -44,7 +44,7 @@ build-docker-image:
 run-python-files-in-development:
   stage: trigger-kubeflow
   variables:
-    KFP_HOST: "http://host.docker.internal:8888"
+    KFP_HOST: $KFP_HOST
   script:
     - echo "⚙️ Submitting Pipeline via Python files to Local Kubeflow..."
     - pip install --upgrade pip
@@ -58,7 +58,7 @@ run-python-files-in-development:
 run-notebook-in-development:
   stage: trigger-kubeflow
   variables:
-    KFP_HOST: "http://host.docker.internal:8888"
+    KFP_HOST: $KFP_HOST
   script:
     - echo "📓 Running Notebook Pipeline on Local Kubeflow..."
     - pip install --upgrade pip
