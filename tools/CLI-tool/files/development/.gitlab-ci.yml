@@ -18,10 +18,10 @@ test-python-files:
   stage: test
   script:
     - echo "🚀 Running Pytest for Development..."
-    - python -m pip install --upgrade pip
-    - if [ -f src/requirements.txt ]; then pip install -r src/requirements.txt; fi
-    - pip install pytest
-    - pytest src/ || echo "No tests provided or tests passed"
+    - python3 -m pip install --upgrade pip
+    - if [ -f src/requirements.txt ]; then python3 -m pip install -r src/requirements.txt; fi
+    - python3 -m pip install pytest
+    - python3 -m pytest src/ || echo "No tests provided or tests passed"
   rules:
     - changes:
         - "src/**/*"
@@ -42,8 +42,8 @@ run-python-files-in-development:
   stage: trigger-kubeflow
   script:
     - echo "⚙️ Submitting Pipeline via Python files to Local Kubeflow..."
-    - pip install kfp~=1.8.14
-    - python src/submit_run.py
+    - python3 -m pip install kfp~=1.8.14
+    - python3 src/submit_run.py
   rules:
     - changes:
         - "src/**/*"
@@ -53,8 +53,8 @@ run-notebook-in-development:
   stage: trigger-kubeflow
   script:
     - echo "📓 Running Notebook Pipeline on Local Kubeflow..."
-    - pip install jupyter kfp~=1.8.14
-    - jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
+    - python3 -m pip install jupyter kfp~=1.8.14
+    - python3 -m jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
   artifacts:
     name: "executed-notebook-$CI_COMMIT_SHORT_SHA"
     paths:
