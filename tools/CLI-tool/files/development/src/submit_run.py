@@ -33,7 +33,8 @@ def submit_pipeline():
     run_name = "demo-run-through-github-actions-on-OSS-MLOps-platform-in-development-environment"
 
     # Submit the pipeline run
-    client.create_run_from_pipeline_func(
+    print("🚀 Submitting pipeline...")
+    result = client.create_run_from_pipeline_func(
         pipeline_func=pipeline,
         arguments=arguments,
         run_name=run_name,
@@ -42,6 +43,7 @@ def submit_pipeline():
         mode=kfp.dsl.PipelineExecutionMode.V2_COMPATIBLE,
         enable_caching=False,
     )
+    print(f"✅ Pipeline submitted successfully! Run ID: {result.run_id}")
 
 if __name__ == "__main__":
     submit_pipeline()
