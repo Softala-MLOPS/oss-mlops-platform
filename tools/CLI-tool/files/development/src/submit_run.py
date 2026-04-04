@@ -9,18 +9,25 @@ from pipelines.pipeline_arg.pipeline_arg import arguments
 
 def submit_pipeline():
 
-    # 1. Get the Kubeflow address, namespace, and user from environment variables (Default is None if not set)
-    kfp_host = os.environ.get("KFP_HOST")
+    # 1. Get the Kubeflow address, namespace, and token from environment variables (Default is None if not set)
+    kfp_host = os.environ.get("KFP_HOST", "http://localhost:8080")  # Default to localhost if not provided
     kfp_namespace = os.environ.get("KFP_NAMESPACE")
-    kfp_user_email = os.environ.get("KFP_USER_EMAIL", "user@example.com")
+    kfp_token = os.environ.get("KFP_BEARER_TOKEN")
 
     # 2. Initialize the client with the specific host
-    # If kfp_host = None, it will fall back to the default behavior (looking for ~/.kube/config)
-    client = kfp.Client(host=kfp_host, namespace=kfp_namespace) 
+    if kfp_token:
+        print(f"🌐 [REMOTE MODE] Connecting to: {kfp_host}")
+        print(f"📂 Namespace: {kfp_namespace}")
+        client = kfp.Client(
+            host=kfp_host, 
+            namespace=kfp_namespace, 
+            existing_token=kfp_token
+        )
+    else:
+        print(f"💻 [LOCAL MODE] Connecting to: {kfp_host}")
+        # Local mode (port-forward) usually doesn't require namespace or token, but we can still provide namespace if needed.
+        client = kfp.Client(host=kfp_host, namespace=kfp_namespace)
 
-    # 3. Set the user
-    client.api_client.default_headers['kubeflow-userid'] = kfp_user_email
-    
     # Define your experiment and run name
     experiment_name = "demo-experiment"
     run_name = "demo-run-through-github-actions-on-OSS-MLOps-platform-in-development-environment"
