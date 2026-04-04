@@ -2,6 +2,7 @@
 import kfp
 import sys
 import os
+import html
 import re
 import requests
 
@@ -21,7 +22,7 @@ def get_dex_cookie(host: str, username: str, password: str) -> str:
         print(f"🚨 [DEBUG] Cannot find login form. Current URL: {resp.url}")
         raise ValueError("Dex login form not found")
         
-    dex_login_url = f"{host}{login_url.group(1)}"
+    dex_login_url = f"{host}{html.unescape(login_url.group(1))}"
     print(f"🔍 [DEBUG] Step 2: Submitting credentials to {dex_login_url}")
     
     resp = session.post(
@@ -43,7 +44,7 @@ def get_dex_cookie(host: str, username: str, password: str) -> str:
         raise ValueError("Login failed, please check your username and password")
         
     return cookie
-    
+
 def submit_pipeline():
     # 1. Get the Kubeflow address, namespace, and credentials from environment variables
     kfp_host = os.environ.get("KFP_HOST", "http://localhost:8080")  # Default to localhost if not provided
