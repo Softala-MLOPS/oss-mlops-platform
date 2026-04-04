@@ -10,33 +10,40 @@ from pipelines.pipeline_definitions.pipeline_definition import pipeline
 from pipelines.pipeline_arg.pipeline_arg import arguments
 
 def get_dex_cookie(host: str, username: str, password: str) -> str:
-    """Get session cookie from Dex using username/password."""
+    """Get session cookie from Dex using username/password with debugging."""
     session = requests.Session()
     
-    # 1. Fetch the login page, follow redirects to Dex
+    print(f"🔍 [DEBUG] Step 1: Fetching login page from {host}")
     resp = session.get(host, allow_redirects=True)
     
-    # 2. Find the action URL of the login form
     login_url = re.search(r'action="(/dex/auth/[^"]+)"', resp.text)
     if not login_url:
+        print(f"🚨 [DEBUG] Cannot find login form. Current URL: {resp.url}")
         raise ValueError("Dex login form not found")
         
     dex_login_url = f"{host}{login_url.group(1)}"
+    print(f"🔍 [DEBUG] Step 2: Submitting credentials to {dex_login_url}")
     
-    # 3. Submit credentials
     resp = session.post(
         dex_login_url,
         data={"login": username, "password": password},
         allow_redirects=True,
     )
     
-    # 4. Get the authservice_session cookie
     cookie = session.cookies.get("authservice_session")
     if not cookie:
+        print("🚨 [DEBUG] LOGIN FAILED. Printing response info:")
+        print(f"   -> Final URL after redirects: {resp.url}")
+        print(f"   -> Status Code: {resp.status_code}")
+        print(f"   -> Cookies received: {session.cookies.get_dict()}")
+        print(f"   -> Username is set: {bool(username)}")
+        print(f"   -> Password is set: {bool(password)}")
+        # In ra 300 ký tự đầu của response để xem có báo lỗi sai pass hay lỗi Istio không
+        print(f"   -> Response snippet: {resp.text[:300]}") 
         raise ValueError("Login failed, please check your username and password")
         
     return cookie
-
+    
 def submit_pipeline():
     # 1. Get the Kubeflow address, namespace, and credentials from environment variables
     kfp_host = os.environ.get("KFP_HOST", "http://localhost:8080")  # Default to localhost if not provided
@@ -95,41 +102,6 @@ sys.path.append('../src')
 from pipelines.pipeline_definitions.pipeline_definition import pipeline
 from pipelines.pipeline_arg.pipeline_arg import arguments
 
-def get_dex_cookie(host: str, username: str, password: str) -> str:
-    """Get session cookie from Dex using username/password with debugging."""
-    session = requests.Session()
-    
-    print(f"🔍 [DEBUG] Step 1: Fetching login page from {host}")
-    resp = session.get(host, allow_redirects=True)
-    
-    login_url = re.search(r'action="(/dex/auth/[^"]+)"', resp.text)
-    if not login_url:
-        print(f"🚨 [DEBUG] Cannot find login form. Current URL: {resp.url}")
-        raise ValueError("Dex login form not found")
-        
-    dex_login_url = f"{host}{login_url.group(1)}"
-    print(f"🔍 [DEBUG] Step 2: Submitting credentials to {dex_login_url}")
-    
-    resp = session.post(
-        dex_login_url,
-        data={"login": username, "password": password},
-        allow_redirects=True,
-    )
-    
-    cookie = session.cookies.get("authservice_session")
-    if not cookie:
-        print("🚨 [DEBUG] LOGIN FAILED. Printing response info:")
-        print(f"   -> Final URL after redirects: {resp.url}")
-        print(f"   -> Status Code: {resp.status_code}")
-        print(f"   -> Cookies received: {session.cookies.get_dict()}")
-        print(f"   -> Username is set: {bool(username)}")
-        print(f"   -> Password is set: {bool(password)}")
-        # In ra 300 ký tự đầu của response để xem có báo lỗi sai pass hay lỗi Istio không
-        print(f"   -> Response snippet: {resp.text[:300]}") 
-        raise ValueError("Login failed, please check your username and password")
-        
-    return cookie
-    
 def submit_pipeline():
     # 1. Get the Kubeflow address, namespace, and credentials from environment variables
     kfp_host = os.environ.get("KFP_HOST", "http://localhost:8080")  # Default to localhost if not provided
