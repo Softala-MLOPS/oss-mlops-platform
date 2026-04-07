@@ -2,7 +2,6 @@ workflow:
   rules:
     - if: '$CI_COMMIT_BRANCH == "development"'
 
-# Run on a standard Python 3.8 environment
 default:
   image: python:3.8
   tags:
@@ -13,7 +12,40 @@ stages:
   - build
   - trigger-kubeflow
 
-# Step 1: Test using Pytest
+# ---------------------------------------------------------------------------
+# Reusable SSH Setup Template (as used in production/staging)
+# ---------------------------------------------------------------------------
+.ssh_setup: &ssh_setup
+  - echo "🔐 Configuring SSH Client..."
+  - apt-get update -y && apt-get install -y openssh-client
+  - mkdir -p ~/.ssh
+
+  - env | grep REMOTE || echo "No variables found starting with REMOTE"
+
+  - |
+    if [ -f "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" ]; then
+      echo "File variable exists. Copying...";
+      cp "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" ~/.ssh/id_rsa;
+    else
+      echo "Variable is NOT A FILE. Attempting to print content...";
+      printf "%s\n" "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa;
+    fi
+
+  - chmod 600 ~/.ssh/id_rsa
+
+  - |
+    if [ -z "$REMOTE_CLUSTER_SSH_IP" ]; then
+      echo "❌ CRITICAL ERROR: IP variable is empty. Stopping pipeline."; exit 1;
+    fi
+
+  - ssh-keyscan -H "$REMOTE_CLUSTER_SSH_IP" >> ~/.ssh/known_hosts
+  - echo "🔗 Establishing SSH Port Forwarding to Remote Cluster (Port 8080)..."
+  - ssh -i ~/.ssh/id_rsa -L 8080:127.0.0.1:8080 -o StrictHostKeyChecking=no -o BatchMode=yes $REMOTE_CLUSTER_SSH_USERNAME@$REMOTE_CLUSTER_SSH_IP -N -f
+  - sleep 5
+
+# ==========================================
+# STAGE 1: TEST
+# ==========================================
 test-python-files:
   stage: test
   script:
@@ -26,12 +58,12 @@ test-python-files:
     - changes:
         - "src/**/*"
 
-# Step 2: Build Docker Image
-# This job uses Docker CLI. Since docker.sock is mounted (in Step 2 setup),
-# the docker:latest image can communicate with the host Docker daemon.
+# ==========================================
+# STAGE 2: BUILD
+# ==========================================
 build-docker-image:
   stage: build
-  image: docker:latest 
+  image: docker:latest
   script:
     - echo "🐳 Building Docker image on Local Runner..."
     - docker build -t mlops-dev-image:latest . || echo "No Dockerfile found, skipping build."
@@ -40,28 +72,28 @@ build-docker-image:
         - "src/**/*"
         - "Dockerfile"
 
-# Step 3.1: Run Python code and submit to Kubeflow
+# ==========================================
+# STAGE 3: TRIGGER KUBEFLOW
+# ==========================================
 run-python-files-in-development:
   stage: trigger-kubeflow
+  before_script:
+    - *ssh_setup
   script:
-    - echo "⚙️ Submitting Pipeline via Python files to Local Kubeflow..."
-    - echo "⚙️ Checking environment variable..."
-    - echo "KFP_HOST is currently $KFP_HOST"
+    - echo "⚙️ Submitting Pipeline via Python files to Development Kubeflow..."
     - pip install --upgrade pip
     - pip install kfp~=1.8.14
-    - env | grep KFP_HOST
     - python src/submit_run.py
   rules:
     - changes:
         - "src/**/*"
 
-# Step 3.2: Run Notebook and submit to Kubeflow
 run-notebook-in-development:
   stage: trigger-kubeflow
+  before_script:
+    - *ssh_setup
   script:
-    - echo "📓 Running Notebook Pipeline on Local Kubeflow..."
-    - echo "⚙️ Checking environment variable..."
-    - echo "KFP_HOST is currently $KFP_HOST"
+    - echo "📓 Running Notebook Pipeline on Development Kubeflow..."
     - pip install --upgrade pip
     - pip install jupyter kfp~=1.8.14
     - jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
