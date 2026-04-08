@@ -6,10 +6,11 @@ import sys
 sys.path.append('../src')
 from pipelines.pipeline_definitions.pipeline_definition import pipeline
 from pipelines.pipeline_arg.pipeline_arg import arguments
-from pipelines.client_connection.client_connection import client_connect 
+
+KFP_ENDPOINT = "http://localhost:8080"
 
 def submit_pipeline():
-    client = client_connect() 
+    client = kfp.Client(host=KFP_ENDPOINT)
 
     if os.environ.get("GITHUB_ACTIONS") == "true":
         ci_platform = "github-actions"

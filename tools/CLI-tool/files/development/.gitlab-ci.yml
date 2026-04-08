@@ -12,37 +12,6 @@ stages:
   - build
   - trigger-kubeflow
 
-# ---------------------------------------------------------------------------
-# Reusable SSH Setup Template (as used in production/staging)
-# ---------------------------------------------------------------------------
-.ssh_setup: &ssh_setup
-  - echo "🔐 Configuring SSH Client..."
-  - apt-get update -y && apt-get install -y openssh-client
-  - mkdir -p ~/.ssh
-
-  - env | grep REMOTE || echo "No variables found starting with REMOTE"
-
-  - |
-    if [ -f "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" ]; then
-      echo "File variable exists. Copying...";
-      cp "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" ~/.ssh/id_rsa;
-    else
-      echo "Variable is NOT A FILE. Attempting to print content...";
-      printf "%s\n" "$REMOTE_CLUSTER_SSH_PRIVATE_KEY" > ~/.ssh/id_rsa;
-    fi
-
-  - chmod 600 ~/.ssh/id_rsa
-
-  - |
-    if [ -z "$REMOTE_CLUSTER_SSH_IP" ]; then
-      echo "❌ CRITICAL ERROR: IP variable is empty. Stopping pipeline."; exit 1;
-    fi
-
-  - ssh-keyscan -H "$REMOTE_CLUSTER_SSH_IP" >> ~/.ssh/known_hosts
-  - echo "🔗 Establishing SSH Port Forwarding to Remote Cluster (Port 8080)..."
-  - ssh -i ~/.ssh/id_rsa -L 8080:127.0.0.1:8080 -o StrictHostKeyChecking=no -o BatchMode=yes $REMOTE_CLUSTER_SSH_USERNAME@$REMOTE_CLUSTER_SSH_IP -N -f
-  - sleep 5
-
 # ==========================================
 # STAGE 1: TEST
 # ==========================================
@@ -77,8 +46,6 @@ build-docker-image:
 # ==========================================
 run-python-files-in-development:
   stage: trigger-kubeflow
-  before_script:
-    - *ssh_setup
   script:
     - echo "⚙️ Submitting Pipeline via Python files to Development Kubeflow..."
     - pip install --upgrade pip
@@ -90,8 +57,6 @@ run-python-files-in-development:
 
 run-notebook-in-development:
   stage: trigger-kubeflow
-  before_script:
-    - *ssh_setup
   script:
     - echo "📓 Running Notebook Pipeline on Development Kubeflow..."
     - pip install --upgrade pip
