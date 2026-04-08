@@ -5,10 +5,13 @@ workflow:
 default:
   tags:
     - self-hosted
+  before_script:
+    - python3 -m venv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
 
 stages:
   - test
-  - build
   - trigger-kubeflow
 
 # ==========================================
@@ -18,7 +21,6 @@ test-python-files:
   stage: test
   script:
     - echo "🚀 Running Pytest for Development..."
-    - pip install --upgrade pip
     - if [ -f src/requirements.txt ]; then pip install -r src/requirements.txt; fi
     - pip install pytest
     - pytest src/ || echo "No tests provided or tests passed"
@@ -33,7 +35,6 @@ run-python-files-in-development:
   stage: trigger-kubeflow
   script:
     - echo "⚙️ Submitting Pipeline via Python files to Development Kubeflow..."
-    - pip install --upgrade pip
     - pip install kfp~=1.8.14
     - python src/submit_run.py
   rules:
@@ -47,7 +48,6 @@ run-notebook-in-development:
   stage: trigger-kubeflow
   script:
     - echo "📓 Running Notebook Pipeline on Development Kubeflow..."
-    - pip install --upgrade pip
     - pip install jupyter kfp~=1.8.14
     - jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
   artifacts:
