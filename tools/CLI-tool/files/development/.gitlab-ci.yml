@@ -28,21 +28,7 @@ test-python-files:
         - "src/**/*"
 
 # ==========================================
-# STAGE 2: BUILD
-# ==========================================
-build-docker-image:
-  stage: build
-  image: docker:latest
-  script:
-    - echo "🐳 Building Docker image on Local Runner..."
-    - docker build -t mlops-dev-image:latest . || echo "No Dockerfile found, skipping build."
-  rules:
-    - changes:
-        - "src/**/*"
-        - "Dockerfile"
-
-# ==========================================
-# STAGE 3: TRIGGER KUBEFLOW
+# STAGE 2: TRIGGER KUBEFLOW (VIA PYTHON)
 # ==========================================
 run-python-files-in-development:
   stage: trigger-kubeflow
@@ -55,6 +41,9 @@ run-python-files-in-development:
     - changes:
         - "src/**/*"
 
+# ==========================================
+# STAGE 3: TRIGGER KUBEFLOW (VIA NOTEBOOK)
+# ==========================================
 run-notebook-in-development:
   stage: trigger-kubeflow
   script:
