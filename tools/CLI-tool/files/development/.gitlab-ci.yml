@@ -3,7 +3,6 @@ workflow:
     - if: '$CI_COMMIT_BRANCH == "development"'
 
 default:
-  image: python:3.8
   tags:
     - self-hosted
 
