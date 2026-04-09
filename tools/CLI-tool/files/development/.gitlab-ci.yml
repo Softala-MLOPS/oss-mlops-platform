@@ -6,7 +6,20 @@ default:
   tags:
     - self-hosted
   before_script:
-    - python3.8 -m venv venv 
+    # 1. Check if Python 3.8 is installed; if not, install it automatically
+    - |
+      if ! command -v python3.8 &> /dev/null; then
+        echo "Starting automatic installation of Python 3.8..."
+        sudo apt-get update
+        sudo apt-get install software-properties-common -y
+        sudo add-apt-repository ppa:deadsnakes/ppa -y
+        sudo apt-get update
+        sudo apt-get install python3.8 python3.8-venv python3.8-distutils -y
+      else
+        echo "Python 3.8 is already installed."
+      fi
+    # 2. Create a virtual environment and use it as usual
+    - python3.8 -m venv venv
     - source venv/bin/activate
     - pip install --upgrade pip
 
