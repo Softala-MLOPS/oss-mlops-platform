@@ -7,7 +7,7 @@ sys.path.append('../src')
 from pipelines.pipeline_definitions.pipeline_definition import pipeline
 from pipelines.pipeline_arg.pipeline_arg import arguments
 
-KFP_ENDPOINT = "http://localhost:8080"
+KFP_ENDPOINT = "http://ml-pipeline.kubeflow.svc.cluster.local:8888"
 
 def submit_pipeline():
     client = kfp.Client(host=KFP_ENDPOINT)
