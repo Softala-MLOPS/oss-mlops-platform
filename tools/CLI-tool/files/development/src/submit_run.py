@@ -1,30 +1,18 @@
 # submit_run.py
-import os
 import kfp
 import sys
 
 sys.path.append('../src')
 from pipelines.pipeline_definitions.pipeline_definition import pipeline
 from pipelines.pipeline_arg.pipeline_arg import arguments
+from ci_context import get_ci_context
 
 KFP_ENDPOINT = "http://localhost:8080"
 
 def submit_pipeline():
     client = kfp.Client(host=KFP_ENDPOINT)
 
-    if os.environ.get("GITHUB_ACTIONS") == "true":
-        ci_platform = "github-actions"
-    elif os.environ.get("CI") == "true":
-        ci_platform = "gitlab-ci"
-    else:
-        ci_platform = "local"
-
-    # Branch name: GitLab uses CI_COMMIT_BRANCH, GitHub uses GITHUB_REF_NAME
-    branch = (
-        os.environ.get("CI_COMMIT_BRANCH")       # GitLab
-        or os.environ.get("GITHUB_REF_NAME")      # GitHub
-        or "unknown-branch"
-    )
+    ci_platform, branch = get_ci_context()
 
     # Define your experiment and run name
     experiment_name = "demo-experiment"
