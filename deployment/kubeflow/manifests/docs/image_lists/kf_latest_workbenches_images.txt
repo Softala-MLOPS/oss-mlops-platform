@@ -1,0 +1,11 @@
+$VOLUME_VIEWER_IMAGE
+ghcr.io/kubeflow/kubeflow/central-dashboard:v1.10.0
+ghcr.io/kubeflow/kubeflow/jupyter-web-app:v1.10.0
+ghcr.io/kubeflow/kubeflow/kfam:v1.10.0
+ghcr.io/kubeflow/kubeflow/notebook-controller:v1.10.0
+ghcr.io/kubeflow/kubeflow/poddefaults-webhook:v1.10.0
+ghcr.io/kubeflow/kubeflow/profile-controller:v1.10.0
+ghcr.io/kubeflow/kubeflow/tensorboard-controller:v1.10.0
+ghcr.io/kubeflow/kubeflow/tensorboards-web-app:v1.10.0
+ghcr.io/kubeflow/kubeflow/volumes-web-app:v1.10.0
+quay.io/brancz/kube-rbac-proxy:v0.8.0
