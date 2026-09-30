@@ -1,0 +1,72 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: istio-operator
+  namespace: istio-system
+spec:
+  components:
+    base:
+      enabled: true
+    cni:
+      enabled: false  # Deployed separately via istio-cni-1-29
+    egressGateways:
+    - enabled: false
+      name: istio-egressgateway
+    ingressGateways:
+    - enabled: true
+      name: istio-ingressgateway
+    istiodRemote:
+      enabled: false
+    pilot:
+      enabled: true
+  hub: docker.io/istio
+  meshConfig:
+    accessLogFile: /dev/stdout
+    defaultConfig:
+      proxyMetadata: {}
+      holdApplicationUntilProxyStarts: true
+    enablePrometheusMerge: true
+  profile: default
+  tag: "1.29.0"  # Updated from 1.17.5
+  values:
+    gateways:
+      istio-ingressgateway:
+        autoscaleEnabled: true
+        type: LoadBalancer
+        secretVolumes:
+        - mountPath: /etc/istio/ingressgateway-certs
+          name: ingressgateway-certs
+          secretName: istio-ingressgateway-certs
+        - mountPath: /etc/istio/ingressgateway-ca-certs
+          name: ingressgateway-ca-certs
+          secretName: istio-ingressgateway-ca-certs
+    global:
+      istioNamespace: istio-system
+      jwtPolicy: third-party-jwt
+      proxy:
+        autoInject: enabled
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 1024Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+      proxy_init:
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 1024Mi
+          requests:
+            cpu: 10m
+            memory: 10Mi
+    pilot:
+      replicaCount: 1
+      autoscaleMin: 1
+      autoscaleMax: 5
+    telemetry:
+      enabled: true
+      v2:
+        enabled: true
+        prometheus:
+          enabled: true

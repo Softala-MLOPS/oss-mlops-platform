@@ -37,17 +37,17 @@ resources:
 - ../../common/cert-manager/kubeflow-issuer/base
 
 # Istio
-- ../../common/istio-1-17/istio-crds/base
-- ../../common/istio-1-17/istio-namespace/base
-- ../../common/istio-1-17/istio-install/base
+- ../../common/istio-1-29/istio-crds/base
+- ../../common/istio-1-29/istio-namespace/base
+- ../../common/istio-1-29/istio-install/base
 
 # KNative
 - ../../common/knative/knative-serving/overlays/gateways
 - ../../common/knative/knative-eventing/base
-- ../../common/istio-1-17/cluster-local-gateway/base
+- ../../common/istio-1-29/cluster-local-gateway/base
 
 # Kubeflow Istio Resources
-- ../../common/istio-1-17/kubeflow-istio-resources/base
+- ../../common/istio-1-29/kubeflow-istio-resources/base
 
 # Kubeflow Pipelines
 - ../../apps/pipeline/upstream/cluster-scoped-resources
