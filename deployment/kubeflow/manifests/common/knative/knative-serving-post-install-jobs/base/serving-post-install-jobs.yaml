@@ -7,7 +7,7 @@ metadata:
     app: storage-version-migration-serving
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: storage-version-migration-job
-    app.kubernetes.io/version: "1.10.2"
+    app.kubernetes.io/version: "1.21.1"
   name: storage-version-migration-serving
 spec:
   ttlSecondsAfterFinished: 600
@@ -20,7 +20,7 @@ spec:
         app: storage-version-migration-serving
         app.kubernetes.io/name: knative-serving
         app.kubernetes.io/component: storage-version-migration-job
-        app.kubernetes.io/version: "1.10.2"
+        app.kubernetes.io/version: "1.21.1"
     spec:
       serviceAccountName: controller
       restartPolicy: OnFailure

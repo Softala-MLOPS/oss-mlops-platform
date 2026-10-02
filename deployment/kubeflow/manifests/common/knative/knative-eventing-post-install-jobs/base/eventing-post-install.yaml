@@ -7,7 +7,7 @@ metadata:
     app: "storage-version-migration-eventing"
     app.kubernetes.io/name: knative-eventing
     app.kubernetes.io/component: storage-version-migration-job
-    app.kubernetes.io/version: "1.10.1"
+    app.kubernetes.io/version: "1.21.1"
   name: storage-version-migration-eventing
 spec:
   ttlSecondsAfterFinished: 600
@@ -18,7 +18,7 @@ spec:
         app: "storage-version-migration-eventing"
         app.kubernetes.io/name: knative-eventing
         app.kubernetes.io/component: storage-version-migration-job
-        app.kubernetes.io/version: "1.10.1"
+        app.kubernetes.io/version: "1.21.1"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
