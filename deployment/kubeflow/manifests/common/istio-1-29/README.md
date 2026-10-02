@@ -33,7 +33,8 @@ old version is `X1.Y1.Z1`:
     **NOTE**
 
     `istioctl` comes with a bunch of [predefined profiles](https://istio.io/latest/docs/setup/additional-setup/config-profiles/)
-    (`default`, `demo`, `minimal`, etc.). The `default` profile is installed by default.
+    (`default`, `demo`, `minimal`, etc.). The `default` profile is installed by default. Previously shown command is not available
+    in newer versions of istioclt, profile.yaml need to be done manully.
 
     ---
 
