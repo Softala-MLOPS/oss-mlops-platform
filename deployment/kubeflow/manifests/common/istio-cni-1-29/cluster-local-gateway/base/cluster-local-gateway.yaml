@@ -1,23 +1,36 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: cluster-local-gateway-service-account
-  namespace: istio-system
   labels:
     app: cluster-local-gateway
-    istio: cluster-local-gateway
-    release: istio
-    istio.io/rev: default
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: istio-ingressgateway
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.29.0
+    helm.sh/chart: istio-ingress-1.29.0
     install.operator.istio.io/owning-resource: unknown
+    istio: cluster-local-gateway
+    istio.io/rev: default
     operator.istio.io/component: IngressGateways
+    release: istio
+  name: cluster-local-gateway-service-account
+  namespace: istio-system
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: cluster-local-gateway
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: istio-ingressgateway
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.29.0
+    helm.sh/chart: istio-ingress-1.29.0
     install.operator.istio.io/owning-resource: unknown
     istio: cluster-local-gateway
+    istio.io/dataplane-mode: none
     istio.io/rev: default
     operator.istio.io/component: IngressGateways
     release: istio
@@ -35,16 +48,24 @@ spec:
   template:
     metadata:
       annotations:
+        istio.io/rev: default
         prometheus.io/path: /stats/prometheus
         prometheus.io/port: '15020'
         prometheus.io/scrape: 'true'
         sidecar.istio.io/inject: 'false'
       labels:
         app: cluster-local-gateway
+        app.kubernetes.io/instance: istio
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: istio-ingressgateway
+        app.kubernetes.io/part-of: istio
+        app.kubernetes.io/version: 1.29.0
         chart: gateways
+        helm.sh/chart: istio-ingress-1.29.0
         heritage: Tiller
         install.operator.istio.io/owning-resource: unknown
         istio: cluster-local-gateway
+        istio.io/dataplane-mode: none
         istio.io/rev: default
         operator.istio.io/component: IngressGateways
         release: istio
@@ -68,8 +89,6 @@ spec:
         env:
         - name: ISTIO_META_ROUTER_MODE
           value: sni-dnat
-        - name: JWT_POLICY
-          value: third-party-jwt
         - name: PILOT_CERT_PROVIDER
           value: istiod
         - name: CA_ADDR
@@ -99,6 +118,11 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: status.hostIP
+        - name: ISTIO_CPU_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              divisor: '1'
+              resource: limits.cpu
         - name: SERVICE_ACCOUNT
           valueFrom:
             fieldRef:
@@ -120,7 +144,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        image: docker.io/istio/proxyv2:1.17.5
+        image: docker.io/istio/proxyv2:1.29.0
         name: istio-proxy
         ports:
         - containerPort: 15020
@@ -181,7 +205,6 @@ spec:
           name: ingressgateway-ca-certs
           readOnly: true
       securityContext:
-        fsGroup: 1337
         runAsGroup: 1337
         runAsNonRoot: true
         runAsUser: 1337
@@ -229,50 +252,48 @@ spec:
           optional: true
           secretName: istio-ingressgateway-ca-certs
 ---
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: cluster-local-gateway
-  namespace: istio-system
-  labels:
-    app: cluster-local-gateway
-    istio: cluster-local-gateway
-    release: istio
-    istio.io/rev: default
-    install.operator.istio.io/owning-resource: unknown
-    operator.istio.io/component: IngressGateways
-spec:
-  minAvailable: 1
-  selector:
-    matchLabels:
-      app: cluster-local-gateway
-      istio: cluster-local-gateway
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  labels:
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: istio-ingressgateway
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.29.0
+    helm.sh/chart: istio-ingress-1.29.0
+    install.operator.istio.io/owning-resource: unknown
+    istio.io/rev: default
+    operator.istio.io/component: IngressGateways
+    release: istio
   name: cluster-local-gateway-sds
   namespace: istio-system
-  labels:
-    release: istio
-    istio.io/rev: default
-    install.operator.istio.io/owning-resource: unknown
-    operator.istio.io/component: IngressGateways
 rules:
-- apiGroups: ['']
-  resources: [secrets]
-  verbs: [get, watch, list]
+- apiGroups:
+  - ''
+  resources:
+  - secrets
+  verbs:
+  - get
+  - watch
+  - list
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  labels:
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: istio-ingressgateway
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.29.0
+    helm.sh/chart: istio-ingress-1.29.0
+    install.operator.istio.io/owning-resource: unknown
+    istio.io/rev: default
+    operator.istio.io/component: IngressGateways
+    release: istio
   name: cluster-local-gateway-sds
   namespace: istio-system
-  labels:
-    release: istio
-    istio.io/rev: default
-    install.operator.istio.io/owning-resource: unknown
-    operator.istio.io/component: IngressGateways
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -286,6 +307,12 @@ kind: HorizontalPodAutoscaler
 metadata:
   labels:
     app: cluster-local-gateway
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: istio-ingressgateway
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.29.0
+    helm.sh/chart: istio-ingress-1.29.0
     install.operator.istio.io/owning-resource: unknown
     istio: cluster-local-gateway
     istio.io/rev: default
@@ -314,6 +341,12 @@ metadata:
   annotations:
   labels:
     app: cluster-local-gateway
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: istio-ingressgateway
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.29.0
+    helm.sh/chart: istio-ingress-1.29.0
     install.operator.istio.io/owning-resource: unknown
     istio: cluster-local-gateway
     istio.io/rev: default
@@ -325,11 +358,9 @@ spec:
   ports:
   - name: status-port
     port: 15020
-    protocol: TCP
     targetPort: 15020
   - name: http2
     port: 80
-    protocol: TCP
     targetPort: 8080
   selector:
     app: cluster-local-gateway

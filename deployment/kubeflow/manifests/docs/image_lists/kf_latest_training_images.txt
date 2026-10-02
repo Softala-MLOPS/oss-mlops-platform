@@ -1,0 +1,1 @@
+ghcr.io/kubeflow/training-v1/training-operator:v1-3f15cb8

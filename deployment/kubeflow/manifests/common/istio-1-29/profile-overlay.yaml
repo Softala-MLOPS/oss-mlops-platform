@@ -8,10 +8,20 @@ spec:
       probes: 3
   components:
     ingressGateways:
+      # Default ingress gateway
+      - enabled: true
+        name: istio-ingressgateway
+        k8s:
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 1024Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
       # Cluster-local gateway for KFServing
       - enabled: true
         name: cluster-local-gateway
-        # https://github.com/istio/istio/issues/19263#issuecomment-615833092
         label:
           app: cluster-local-gateway
           istio: cluster-local-gateway
@@ -50,7 +60,7 @@ spec:
               port: 80
               targetPort: 8080
 
-    # Disable EgressGateway
     egressGateways:
     - enabled: false
       name: istio-egressgateway
+

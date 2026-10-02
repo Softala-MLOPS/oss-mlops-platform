@@ -1,0 +1,12 @@
+docker.io/seldonio/mlserver:1.3.2
+gcr.io/kubebuilder/kube-rbac-proxy:v0.13.1
+kserve/kserve-controller:v0.11.0
+kserve/lgbserver:v0.11.0
+kserve/models-web-app:v0.10.0
+kserve/paddleserver:v0.11.0
+kserve/pmmlserver:v0.11.0
+kserve/sklearnserver:v0.11.0
+kserve/xgbserver:v0.11.0
+nvcr.io/nvidia/tritonserver:23.05-py3
+pytorch/torchserve-kfs:0.8.0
+tensorflow/serving:2.6.2

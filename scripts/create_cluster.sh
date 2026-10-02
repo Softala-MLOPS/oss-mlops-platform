@@ -11,7 +11,7 @@ set -eoa pipefail
 
 if [ "$INSTALL_LOCAL_REGISTRY" = "true" ]; then
 # create a cluster with the local registry enabled in containerd
-cat <<EOF | kind create cluster --name $CLUSTER_NAME --image=kindest/node:v1.24.0 --config=-
+cat <<EOF | kind create cluster --name $CLUSTER_NAME --image=kindest/node:v1.37.0 --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 networking:
@@ -40,7 +40,7 @@ EOF
 
 else
 # create a cluster
-cat <<EOF | kind create cluster --name $CLUSTER_NAME --image=kindest/node:v1.24.0 --config=-
+cat <<EOF | kind create cluster --name $CLUSTER_NAME --image=kindest/node:v1.37.0 --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 networking:
