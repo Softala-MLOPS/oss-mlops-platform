@@ -1,14 +1,14 @@
-FROM python:3.8.3
+FROM python:3.13.15
 
-ARG MLFLOW_VERSION=2.4.0
-ARG PSYCOPG2_VERSION=2.9.2
+ARG MLFLOW_VERSION=3.16.0
+ARG PSYCOPG2_VERSION=2.9.13
 ARG PYMYSQL_VERSION=1.0.2
 ARG MYSQLCLIENT_VERSION=2.1.0
 
 RUN apt-get update
 RUN apt-get -y install default-libmysqlclient-dev
 
-RUN pip install --upgrade pip setuptools wheel && pip install mlflow==${MLFLOW_VERSION} psycopg2==${PSYCOPG2_VERSION} protobuf==3.20.0 boto3==1.15.16
+RUN pip install --upgrade pip setuptools wheel && pip install mlflow==${MLFLOW_VERSION} psycopg2==${PSYCOPG2_VERSION} protobuf==3.12.0 boto3==1.43.92
 
 # RUN pip install PyMySQL==${PYMYSQL_VERSION}
 RUN pip install mysqlclient==${MYSQLCLIENT_VERSION}
