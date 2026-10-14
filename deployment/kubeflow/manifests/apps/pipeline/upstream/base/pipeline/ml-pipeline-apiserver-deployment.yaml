@@ -39,6 +39,10 @@ spec:
                   fieldPath: metadata.namespace
             - name: OBJECTSTORECONFIG_SECURE
               value: "false"
+            - name: OBJECTSTORECONFIG_HOST
+              value: minio-service.kubeflow
+            - name: OBJECTSTORECONFIG_PORT
+              value: "9000"
             - name: OBJECTSTORECONFIG_BUCKETNAME
               valueFrom:
                 configMapKeyRef:
