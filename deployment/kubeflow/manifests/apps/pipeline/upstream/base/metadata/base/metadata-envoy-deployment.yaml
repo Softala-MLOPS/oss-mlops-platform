@@ -18,6 +18,7 @@ spec:
       containers:
       - name: container
         image: ghcr.io/kubeflow/kfp-metadata-envoy:dummy
+        args: ["/etc/envoy/envoy.yaml"]
         ports:
         - name: md-envoy
           containerPort: 9090
