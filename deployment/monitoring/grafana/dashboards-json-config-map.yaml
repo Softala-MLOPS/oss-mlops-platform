@@ -920,7 +920,7 @@ data:
           "thresholds": "65, 90",
           "title": "Cluster memory usage",
           "transparent": false,
-          "type": "singlestat",
+          "type": "stat",
           "valueFontSize": "80%",
           "valueMaps": [
             {
@@ -1007,7 +1007,7 @@ data:
           ],
           "thresholds": "65, 90",
           "title": "Cluster CPU usage ($interval avg)",
-          "type": "singlestat",
+          "type": "stat",
           "valueFontSize": "80%",
           "valueMaps": [
             {
@@ -1095,7 +1095,7 @@ data:
           ],
           "thresholds": "65, 90",
           "title": "Cluster filesystem usage",
-          "type": "singlestat",
+          "type": "stat",
           "valueFontSize": "80%",
           "valueMaps": [
             {
@@ -1181,7 +1181,7 @@ data:
           ],
           "thresholds": "",
           "title": "Used",
-          "type": "singlestat",
+          "type": "stat",
           "valueFontSize": "50%",
           "valueMaps": [
             {
@@ -1267,7 +1267,7 @@ data:
           ],
           "thresholds": "",
           "title": "Total",
-          "type": "singlestat",
+          "type": "stat",
           "valueFontSize": "50%",
           "valueMaps": [
             {
@@ -1354,7 +1354,7 @@ data:
           ],
           "thresholds": "",
           "title": "Used",
-          "type": "singlestat",
+          "type": "stat",
           "valueFontSize": "50%",
           "valueMaps": [
             {
@@ -1440,7 +1440,7 @@ data:
           ],
           "thresholds": "",
           "title": "Total",
-          "type": "singlestat",
+          "type": "stat",
           "valueFontSize": "50%",
           "valueMaps": [
             {
@@ -1527,7 +1527,7 @@ data:
           ],
           "thresholds": "",
           "title": "Used",
-          "type": "singlestat",
+          "type": "stat",
           "valueFontSize": "50%",
           "valueMaps": [
             {
@@ -1614,7 +1614,7 @@ data:
           ],
           "thresholds": "",
           "title": "Total",
-          "type": "singlestat",
+          "type": "stat",
           "valueFontSize": "50%",
           "valueMaps": [
             {
@@ -1706,7 +1706,7 @@ data:
             "sort": 2,
             "value_type": "cumulative"
           },
-          "type": "graph",
+          "type": "timeseries",
           "xaxis": {
             "buckets": null,
             "mode": "time",
@@ -1817,7 +1817,7 @@ data:
             "value_type": "cumulative"
           },
           "transparent": false,
-          "type": "graph",
+          "type": "timeseries",
           "xaxis": {
             "buckets": null,
             "mode": "time",
@@ -1940,7 +1940,7 @@ data:
             "value_type": "cumulative"
           },
           "transparent": false,
-          "type": "graph",
+          "type": "timeseries",
           "xaxis": {
             "buckets": null,
             "mode": "time",
@@ -2047,7 +2047,7 @@ data:
             "sort": 2,
             "value_type": "cumulative"
           },
-          "type": "graph",
+          "type": "timeseries",
           "xaxis": {
             "buckets": null,
             "mode": "time",
