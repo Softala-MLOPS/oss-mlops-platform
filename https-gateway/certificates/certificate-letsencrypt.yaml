@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mlops-tls
+  namespace: istio-system
+spec:
+  secretName: mlops-tls
+  commonName: ${DOMAIN}
+  dnsNames:
+    - ${DOMAIN}
+  issuerRef:
+    name: letsencrypt-staging   # switch to letsencrypt-prod once staging works
+    kind: ClusterIssuer

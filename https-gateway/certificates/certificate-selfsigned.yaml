@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mlops-tls
+  namespace: istio-system
+spec:
+  secretName: mlops-tls
+  commonName: mlops.local
+  dnsNames:
+    - mlops.local
+  issuerRef:
+    name: selfsigned
+    kind: ClusterIssuer
