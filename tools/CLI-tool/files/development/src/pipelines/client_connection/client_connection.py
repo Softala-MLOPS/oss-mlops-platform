@@ -1,6 +1,6 @@
 # client_connection.py
 import kfp
 
-KFP_ENDPOINT = "http://localhost:8080"
+from kfp_config import get_kfp_endpoint
 
-client = kfp.Client(host=KFP_ENDPOINT)
+client = kfp.Client(host=get_kfp_endpoint())

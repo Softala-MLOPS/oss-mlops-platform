@@ -1,4 +1,4 @@
-name: Start a run from Jupyter Notebook on local server via self-hosted runner
+name: Execute notebook via ARC
 
 on:
   push:
@@ -9,31 +9,24 @@ on:
 
 jobs:
   run-notebook-in-development-environment:
-    runs-on: self-hosted
+    runs-on: arc-mlops
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4 # Use the latest version of checkout action
+    - uses: actions/checkout@v4
     
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v5 # Use the latest version of setup-python
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.8'
-        cache: 'pip' # Speeds up execution by caching dependencies
+        python-version: '3.10'
         
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install jupyter
+        pip install -r requirements.txt
         
-    - name: Connect to local server and run the Notebook
+    - name: Execute notebook against Kubeflow
+      env:
+        KFP_ENDPOINT: http://ml-pipeline.kubeflow.svc.cluster.local:8888
       run: |       
         # Execute the Jupyter Notebook and overwrite the existing file with the results
         jupyter nbconvert --execute --to notebook --inplace notebooks/demo-pipeline.ipynb
-        
-    - name: Upload executed Notebook as artifact # This allows you to download the executed notebook from the workflow run page
-      uses: actions/upload-artifact@v4
-      with:
-        name: executed-notebook
-        path: notebooks/demo-pipeline.ipynb
-        retention-days: 7 # Keep the artifact for 7 days (you can adjust this as needed)
