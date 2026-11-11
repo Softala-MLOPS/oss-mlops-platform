@@ -1,0 +1,6 @@
+# Delete cache deployer as we use the cert-manager instead
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubeflow-pipelines-cache-deployer-sa
+$patch: delete

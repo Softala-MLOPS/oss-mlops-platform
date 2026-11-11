@@ -1,0 +1,6 @@
+# Delete cache deployer as we use the cert-manager instead
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache-deployer-deployment
+$patch: delete
