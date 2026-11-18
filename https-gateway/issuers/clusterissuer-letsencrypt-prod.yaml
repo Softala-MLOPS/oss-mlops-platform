@@ -10,4 +10,5 @@ spec:
       name: letsencrypt-prod-account-key
     solvers:
     - http01:
-        ingress: {}
+        ingress:
+          class: istio

@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: http-to-https-redirect
+  namespace: istio-system
+spec:
+  hosts: ["*"]
+  gateways:
+  - kubeflow/kubeflow-gateway
+  http:
+  - match:
+    - port: 80
+    redirect:
+      scheme: https
+      redirectCode: 301
