@@ -2405,7 +2405,6 @@ spec:
     strategy: Webhook
     webhook:
       clientConfig:
-        caBundle: Cg==
         service:
           name: kserve-webhook-server-service
           namespace: kserve

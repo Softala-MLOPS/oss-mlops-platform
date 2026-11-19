@@ -90,7 +90,7 @@ DISK_SPACE_GB=$(($DISK_SPACE / 1024 / 1024))
 
 # TODO: Set required depending on the deployment, ray, etc.
 
-if [[ DISK_SPACE < $RECOMMENDED_DISK_SPACE ]]; then
+if [[ $DISK_SPACE < $RECOMMENDED_DISK_SPACE ]]; then
     echo "WARNING: Not enough disk space detected!"
     echo "The recommended is > ${RECOMMENDED_DISK_SPACE_GB} GB of disk space. You have ${DISK_SPACE_GB} GB."
     while true; do
@@ -195,7 +195,7 @@ echo "Manifests built successfully."
 echo
 echo "Applying resources..."
 while true; do
-  if kubectl apply -f "$tmp_file"; then
+  if kubectl apply --server-side --force-conflicts -f "$tmp_file"; then
       echo "Resources successfully applied."
       rm "$tmp_file"
       break
