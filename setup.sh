@@ -2,6 +2,9 @@
 
 set -eoa pipefail
 
+GITHUB_CONFIG_URL_ENV="${GITHUB_CONFIG_URL:-}"
+GITHUB_PAT="${GITHUB_PAT:-}"
+
 # Internal directory where to store platform settings
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 PLATFORM_DIR="$SCRIPT_DIR/.platform"
@@ -10,6 +13,7 @@ PLATFORM_CONFIG="$PLATFORM_DIR/.config"
 cp "$SCRIPT_DIR/config.env" $PLATFORM_CONFIG
 
 source $PLATFORM_CONFIG
+GITHUB_CONFIG_URL="${GITHUB_CONFIG_URL_ENV:-$GITHUB_CONFIG_URL}"
 
 RUN_TESTS=false
 LOG_LEVEL_TESTS="WARNING"
@@ -66,10 +70,39 @@ case "$choice" in
     * ) INSTALL_RAY=false ;;
 esac
 
+INSTALL_ARC=false
+echo
+read -p "Install the in-cluster GitHub Actions runner (ARC)? (y/n) (default is [n]): " choice
+case "$choice" in
+    y|Y ) INSTALL_ARC=true ;;
+    * ) INSTALL_ARC=false ;;
+esac
+
+if [ "$INSTALL_ARC" = true ]; then
+  if [ -z "$GITHUB_CONFIG_URL" ]; then
+    read -p "GitHub repository or organization URL: " GITHUB_CONFIG_URL
+  fi
+  if [ -z "$GITHUB_PAT" ]; then
+    read -s -p "GitHub PAT (classic, not saved to disk): " GITHUB_PAT
+    echo
+  fi
+  if [ -z "$GITHUB_CONFIG_URL" ] || [ -z "$GITHUB_PAT" ]; then
+    echo "ARC installation requires GITHUB_CONFIG_URL and GITHUB_PAT." >&2
+    exit 1
+  fi
+fi
+
 # Save selections to settings file
 echo -e "\nDEPLOYMENT_OPTION=$DEPLOYMENT_OPTION" >> $PLATFORM_CONFIG
 echo -e "\nINSTALL_LOCAL_REGISTRY=$INSTALL_LOCAL_REGISTRY" >> $PLATFORM_CONFIG
 echo -e "\nINSTALL_RAY=$INSTALL_RAY" >> $PLATFORM_CONFIG
+echo -e "\nINSTALL_ARC=$INSTALL_ARC" >> $PLATFORM_CONFIG
+echo "GITHUB_CONFIG_URL=$GITHUB_CONFIG_URL" >> $PLATFORM_CONFIG
+echo "ARC_RUNNER_SCALE_SET_NAME=$ARC_RUNNER_SCALE_SET_NAME" >> $PLATFORM_CONFIG
+echo "ARC_MIN_RUNNERS=$ARC_MIN_RUNNERS" >> $PLATFORM_CONFIG
+echo "ARC_MAX_RUNNERS=$ARC_MAX_RUNNERS" >> $PLATFORM_CONFIG
+echo "ARC_CONTROLLER_VERSION=$ARC_CONTROLLER_VERSION" >> $PLATFORM_CONFIG
+echo "ARC_RUNNER_VERSION=$ARC_RUNNER_VERSION" >> $PLATFORM_CONFIG
 
 # CHECK DISK SPACE
 RECOMMENDED_DISK_SPACE_KUBEFLOW=26214400
@@ -220,6 +253,13 @@ if [ "$INSTALL_RAY" = true ]; then
   echo "Installing Ray"
   /bin/bash "$SCRIPT_DIR/scripts/install_helm.sh"
   /bin/bash "$SCRIPT_DIR/scripts/install_ray.sh"
+fi
+
+# DEPLOY IN-CLUSTER GITHUB ACTIONS RUNNER
+if [ "$INSTALL_ARC" = true ]; then
+  echo "Installing Actions Runner Controller"
+  /bin/bash "$SCRIPT_DIR/scripts/install_helm.sh"
+  GITHUB_PAT="$GITHUB_PAT" /bin/bash "$SCRIPT_DIR/scripts/install_arc_runner.sh"
 fi
 
 echo

@@ -53,7 +53,8 @@ Ml repo structure and setup (1-3) to be created by the tool:
   - "staging" and "production" branches CI/CD pipelines could submit to platform installed to CSC
 - each CI/CD pipeline constructs and submits kubeflow pipeline to its configured platform instance
 - that includes testing access to data (and potential previous model versions - which is not part of example pipeline) before submitting kf pipeline
-- **GitHub:** uses `.github/workflows/` YAML files with GitHub Actions; self-hosted runner runs jobs directly on the host machine
+- **GitHub:** uses `.github/workflows/` YAML files with GitHub Actions. Set `runs-on: arc-mlops` to execute
+  generated-repository jobs on the in-cluster ARC runner scale set.
 - **GitLab:** uses `.gitlab-ci.yml` with GitLab CI/CD; self-hosted GitLab Runner uses shell executor and requires Python 3.8 to be pre-installed on the host machine
 
 

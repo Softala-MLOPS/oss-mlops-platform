@@ -15,6 +15,39 @@ Install the experimentation platform with:
 
 > **WARNING:** Using the `--test` flag will install the `requirements-tests.txt` in your current python environment.
 
+## In-cluster GitHub Actions runner (ARC)
+
+The setup script can install Actions Runner Controller and an autoscaling runner scale set.
+Choose `y` at the “Install the in-cluster GitHub Actions runner” prompt, then provide:
+
+- A GitHub repository or organization URL, such as `https://github.com/my-org/my-repo`
+- A classic GitHub PAT with repository administration/self-hosted runner permissions
+
+The PAT can also be supplied without a prompt:
+
+```bash
+GITHUB_CONFIG_URL=https://github.com/my-org/my-repo \
+GITHUB_PAT=ghp_... \
+./setup.sh
+```
+
+The PAT is passed directly to Kubernetes as an `arc-github-secret` Secret and is not written to `config.env`
+or `.platform/.config`. Use a GitHub App for production where possible.
+
+The default scale-set label is `arc-mlops`. A workflow can target it with:
+
+```yaml
+jobs:
+  demo:
+    runs-on: arc-mlops
+```
+
+Verify the ARC controller and scale set:
+
+```bash
+./scripts/test_arc_runner.sh
+```
+
 ## Deployment options
 
 1. **Kubeflow:** Full Kubeflow deployment with all components.
