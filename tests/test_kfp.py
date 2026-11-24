@@ -20,7 +20,7 @@ PIPELINE_FILE = pathlib.Path(__file__).parent / "resources" / "kfp" / "pipeline.
 
 IMAGE_NAME = "kfp-test-img"
 EXPERIMENT_NAME = "Test Experiment"
-KUBEFLOW_ENDPOINT = "http://localhost:8080"
+KUBEFLOW_ENDPOINT = os.getenv("KFP_ENDPOINT", "http://localhost:8080").rstrip("/")
 KUBEFLOW_USERNAME = "user@example.com"
 KUBEFLOW_PASSWORD = "12341234"
 KUBEFLOW_USER_NAMESPACE = "kubeflow-user-example-com"

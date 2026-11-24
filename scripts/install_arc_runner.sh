@@ -51,6 +51,6 @@ helm upgrade --install "$ARC_RUNNER_SCALE_SET_NAME" \
 kubectl wait --for=condition=Available \
   --namespace arc-system \
   --timeout=5m \
-  deployment/arc-gha-runner-scale-set-controller
+  deployment/arc-gha-rs-controller
 
 echo "ARC runner scale set '$ARC_RUNNER_SCALE_SET_NAME' installed."
