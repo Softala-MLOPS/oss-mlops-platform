@@ -11,8 +11,9 @@ permissions:
   contents: read
 
 jobs:
-  verify-in-cluster-connection:
+  run-demo-pipeline:
     runs-on: arc-mlops
+    timeout-minutes: 95
     steps:
       - uses: actions/checkout@v4
 
@@ -21,19 +22,13 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Verify in-cluster Kubeflow connection
+      - name: Submit and wait for demo pipeline
         env:
           KFP_ENDPOINT: http://ml-pipeline.kubeflow.svc.cluster.local:8888
+          KFP_WAIT_FOR_RUN_COMPLETION: "true"
+          KFP_RUN_TIMEOUT_SECONDS: "5400"
+        working-directory: tools/CLI-tool/files/development
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "kfp~=1.8.22"
-          python - <<'PY'
-          import os
-          import kfp
-
-          endpoint = os.environ["KFP_ENDPOINT"].rstrip("/")
-          client = kfp.Client(host=endpoint)
-          experiments = client.list_experiments()
-          print(f"Connected to Kubeflow at {endpoint}")
-          print(f"Experiments response received: {experiments is not None}")
-          PY
+          python -m pip install -r ../common/requirements.txt
+          python src/submit_run.py

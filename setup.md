@@ -48,6 +48,10 @@ Verify the ARC controller and scale set:
 ./scripts/test_arc_runner.sh
 ```
 
+The `ARC in-cluster runner demo` workflow submits the development wine-quality pipeline
+to Kubeflow and waits for the run to finish. A successful Actions job means the KFP run
+completed with `Succeeded`; the run is also visible in the Kubeflow Pipelines UI.
+
 ## Deployment options
 
 1. **Kubeflow:** Full Kubeflow deployment with all components.
