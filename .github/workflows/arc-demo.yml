@@ -1,0 +1,39 @@
+name: ARC in-cluster runner demo
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - development
+      - arc-runner-and-gitlab-runner
+
+permissions:
+  contents: read
+
+jobs:
+  verify-in-cluster-connection:
+    runs-on: arc-mlops
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Verify in-cluster Kubeflow connection
+        env:
+          KFP_ENDPOINT: http://ml-pipeline.kubeflow.svc.cluster.local:8888
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "kfp~=1.8.22"
+          python - <<'PY'
+          import os
+          import kfp
+
+          endpoint = os.environ["KFP_ENDPOINT"].rstrip("/")
+          client = kfp.Client(host=endpoint)
+          experiments = client.list_experiments(limit=1)
+          print(f"Connected to Kubeflow at {endpoint}")
+          print(f"Experiments response received: {experiments is not None}")
+          PY
