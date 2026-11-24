@@ -1,11 +1,14 @@
-# Values for the actions-runner-controller runner scale set chart.
-# Install ARC itself and create the GitHub credential secret separately.
-githubConfigUrl: https://github.com/Softala-MLOPS-Rauli/workRauli
+# Values for the Actions Runner Controller runner scale set chart.
+# githubConfigUrl and scaling settings are overridden by scripts/install_arc_runner.sh.
 githubConfigSecret: arc-github-secret
 runnerScaleSetName: arc-mlops
 runnerGroup: default
 minRunners: 0
 maxRunners: 2
+
+controllerServiceAccount:
+  namespace: arc-system
+  name: arc-gha-rs-controller
 
 template:
   spec:
@@ -18,7 +21,7 @@ template:
         type: RuntimeDefault
     containers:
       - name: runner
-        image: ghcr.io/actions/actions-runner:latest
+        image: ghcr.io/actions/actions-runner:2.338.0
         command:
           - /home/runner/run.sh
         securityContext:
