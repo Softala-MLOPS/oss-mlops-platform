@@ -33,7 +33,7 @@ jobs:
 
           endpoint = os.environ["KFP_ENDPOINT"].rstrip("/")
           client = kfp.Client(host=endpoint)
-          experiments = client.list_experiments(limit=1)
+          experiments = client.list_experiments()
           print(f"Connected to Kubeflow at {endpoint}")
           print(f"Experiments response received: {experiments is not None}")
           PY
