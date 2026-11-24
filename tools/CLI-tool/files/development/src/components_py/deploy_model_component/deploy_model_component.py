@@ -20,6 +20,7 @@ def deploy_model(model_name: str, storage_uri: str):
     from kserve import V1beta1PredictorSpec
     from kserve import V1beta1SKLearnSpec
     from kubernetes.client import V1ResourceRequirements
+    from kubernetes.client.rest import ApiException
 
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
@@ -54,5 +55,23 @@ def deploy_model(model_name: str, storage_uri: str):
             )
         )
     )
-    KServe = KServeClient()
-    KServe.create(isvc)
+    kserve_client = KServeClient()
+    try:
+        kserve_client.api_instance.get_namespaced_custom_object(
+            constants.KSERVE_GROUP,
+            kserve_version,
+            namespace,
+            constants.KSERVE_PLURAL,
+            model_name,
+        )
+    except ApiException as error:
+        if error.status != 404:
+            raise
+        kserve_client.create(isvc, namespace=namespace, watch=True)
+    else:
+        kserve_client.replace(
+            name=model_name,
+            inferenceservice=isvc,
+            namespace=namespace,
+            watch=True,
+        )
