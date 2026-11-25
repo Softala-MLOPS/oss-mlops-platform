@@ -3,7 +3,7 @@
 githubConfigSecret: arc-github-secret
 runnerScaleSetName: arc-mlops
 runnerGroup: default
-minRunners: 0
+minRunners: 1
 maxRunners: 2
 
 controllerServiceAccount:

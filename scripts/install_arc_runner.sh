@@ -41,8 +41,8 @@ helm upgrade --install "$ARC_RUNNER_SCALE_SET_NAME" \
   --values "$REPOSITORY_ROOT/deployment/arc-runner-values.yaml" \
   --set-string "githubConfigUrl=$GITHUB_CONFIG_URL" \
   --set-string "runnerScaleSetName=$ARC_RUNNER_SCALE_SET_NAME" \
-  --set-string "minRunners=$ARC_MIN_RUNNERS" \
-  --set-string "maxRunners=$ARC_MAX_RUNNERS" \
+  --set "minRunners=$ARC_MIN_RUNNERS" \
+  --set "maxRunners=$ARC_MAX_RUNNERS" \
   --set-string "template.spec.containers[0].image=ghcr.io/actions/actions-runner:$ARC_RUNNER_VERSION" \
   --wait \
   --timeout 10m \
