@@ -51,12 +51,5 @@ oletusosoite on `http://localhost:8080`.
 ## Testitulos
 
 GitHub Actions -ajo [#6](https://github.com/Softala-MLOPS/oss-mlops-platform/actions/runs/45401676520)
-suoritti koko demopipelinen onnistuneesti (`Succeeded`). Ajo kesti 17 min 38 s.
-
-## Esitykseen sopivat kuvakaappaukset
-
-1. Onnistunut GitHub Actions -ajo ja sen kesto.
-2. Workflow’n `runs-on: arc-mlops` ja `KFP_ENDPOINT`.
-3. Kubeflow Pipelinesin onnistunut pipeline-graafi.
-4. Runner-podin tila tai sen suojausasetukset.
+suoritti koko demopipelinen onnistuneesti.
 
